@@ -140,7 +140,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
             );
           }
           catch(e){
-            console.log("RDSExeption ng-if: " + e);
+            console.log("Exception while trying to process attribute ng-if: " + e);
           }
         }
       }
