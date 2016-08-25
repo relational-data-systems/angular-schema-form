@@ -128,14 +128,20 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
         for (var i = 0; i < children.length; i++) {
           var child = children[i];
-          var ngIf = child.getAttribute('ng-if');
-          child.setAttribute(
-            'ng-if',
-            ngIf ?
-            '(' + ngIf +
-            ') || (' + evalExpr + ')'
-            : evalExpr
-          );
+          var ngIf;
+          try {
+            ngIf = child.getAttribute('ng-if');
+            child.setAttribute(
+              'ng-if',
+              ngIf ?
+              '(' + ngIf +
+              ') || (' + evalExpr + ')'
+                : evalExpr
+            );
+          }
+          catch(e){
+            console.log("RDSExeption ng-if: " + e);
+          }
         }
       }
     },
