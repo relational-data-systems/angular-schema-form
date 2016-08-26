@@ -195,8 +195,9 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
         for (var i = 0; i < children.length; i++) {
           var child = children[i];
-          var ngIf;
-          try {
+          // Sometimes child might be a Text object - Text objects have no attributes,
+          // so don't try checking or things will break
+          if (!(child instanceof Text)) {
             ngIf = child.getAttribute('ng-if');
             child.setAttribute(
               'ng-if',
@@ -205,9 +206,6 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
               ') || (' + evalExpr + ')'
                 : evalExpr
             );
-          }
-          catch(e){
-            console.log("Exception while trying to process attribute ng-if: " + e);
           }
         }
       }
