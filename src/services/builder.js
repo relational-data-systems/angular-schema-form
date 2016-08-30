@@ -128,14 +128,18 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
         for (var i = 0; i < children.length; i++) {
           var child = children[i];
-          var ngIf = child.getAttribute('ng-if');
-          child.setAttribute(
-            'ng-if',
-            ngIf ?
-            '(' + ngIf +
-            ') || (' + evalExpr + ')'
-            : evalExpr
-          );
+          // Sometimes child might be a Text object - Text objects have no attributes,
+          // so don't try checking or things will break
+          if (!(child instanceof Text)) {
+            ngIf = child.getAttribute('ng-if');
+            child.setAttribute(
+              'ng-if',
+              ngIf ?
+              '(' + ngIf +
+              ') || (' + evalExpr + ')'
+                : evalExpr
+            );
+          }
         }
       }
     },
