@@ -41,14 +41,18 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             return viewValue;
           }
 
-          var result =  sfValidator.validate(form, viewValue);
+          var result ={'valid':true}
+          //skip validation against schema for uiselectmultiple since the viewValue from it is not the modelValue.
+          if(form.type!=='uiselectmultiple') 	 {
+            var result =  sfValidator.validate(form, viewValue);
+          }
           //console.log('result is', result)
           // Since we might have different tv4 errors we must clear all
           // errors that start with tv4-
           Object.keys(ngModel.$error)
               .filter(function(k) { return k.indexOf('tv4-') === 0; })
               .forEach(function(k) { ngModel.$setValidity(k, true); });
-
+          ngModel.$setValidity('complexValidation' , true);
           if (!result.valid) {
             // it is invalid, return undefined (no model update)
             ngModel.$setValidity('tv4-' + result.error.code, false);
@@ -63,8 +67,16 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             }
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
+          } else {
+            if(form.complexValidationResult===false) {
+              ngModel.$setValidity('complexValidation' , false);
+              error = {'code':'complexValidation'};
+              return viewValue;
+            } else {
+              return viewValue;
+            }
           }
-          return viewValue;
+
         };
 
         // Custom validators, parsers, formatters etc
@@ -99,7 +111,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&&e !== 'complexValidation';});
           };
         }
 
@@ -107,8 +119,8 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
         // A bit ugly but useful.
         scope.validateField =  function(formName) {
-          
-          // If we have specified a form name, and this model is not within 
+
+          // If we have specified a form name, and this model is not within
           // that form, then leave things be.
           if(formName != undefined && ngModel.$$parentForm.$name !== formName) {
             return;
@@ -137,6 +149,10 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // so we need to do a special required check. Fortunately we have $isEmpty
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
+            } else if (form.complexValidationResult === false ) {
+              ngModel.$setValidity('complexValidation', false);
+            } else if(form.complexValidationResult){
+              ngModel.$setValidity('complexValidation', true);
             }
 
           } else {

@@ -170,8 +170,31 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         var childFrag = args.build(args.form.items, args.path + '.items', state);
         items.appendChild(childFrag);
       }
+    },
+    complexValidation: function(args) {
+      // Do we have a condition? Then we slap on an ng-if on all children,
+      // but be nice to existing ng-if.
+      if (args.form.complexValidation) {
+        var evalExpr = 'evalExpr(' + args.path +
+            '.complexValidation, { model: model, "arrayIndex": $index})';
+        if (args.form.key) {
+          var strKey = sfPathProvider.stringify(args.form.key);
+          evalExpr = 'evalExpr(' + args.path + '.complexValidation,{ model: model, "arrayIndex": $index, ' +
+              '"modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
+        }
+
+        var children = args.fieldFrag.children || args.fieldFrag.childNodes;
+        for (var i = 0; i < children.length; i++) {
+          var child = children[i];
+          child.setAttribute(
+              'complex-validation',
+              evalExpr
+          );
+        }
+      }
     }
   };
+
   this.builders = builders;
   var stdBuilders = [
     builders.sfField,
