@@ -194,6 +194,30 @@ function(sel, sfPath, schemaForm) {
         return model;
       };
 
+      scope.indexDown = function(index) {
+        var model = scope.modelArray;
+        if (model && index > 0 && index < model.length) {
+          var tmp = model[index - 1];
+          model[index - 1] = model[index];
+          model[index] = tmp;
+          return index - 1;
+        } else {
+          return index;
+        }
+      };
+
+      scope.indexUp= function(index) {
+        var model = scope.modelArray;
+        if (model && index >= 0 && index < model.length - 1) {
+          var tmp = model[index + 1];
+          model[index + 1] = model[index];
+          model[index] = tmp;
+          return index + 1;
+        } else {
+          return index;
+        }
+      };
+
       // For backwards compatability, i.e. when a bootstrap-decorator tag is used
       // as child to the array.
       var setIndex = function(index) {
