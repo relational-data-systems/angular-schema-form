@@ -36,6 +36,14 @@ angular.module('schemaForm').factory('sfValidator', [function() {
       value = undefined;
     }
 
+    // kelin - our own workaround for null value being rejected in select components
+    // due to typeof(null) === 'object'
+    if (["select", "rds-dynamic-single-select", "rds-dynamic-radios", "radios-inline", "radiobuttons"].indexOf(form.type)) {
+      if (value === null) {
+        value = undefined;
+      }
+    }
+
     // Version 4 of JSON Schema has the required property not on the
     // property itself but on the wrapping object. Since we like to test
     // only this property we wrap it in a fake object.
