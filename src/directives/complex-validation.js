@@ -11,7 +11,7 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
             // the parsed value, ex. a number instead of a string
             priority: 500,
             require: '?ngModel',
-            link: function ($scope, $element, $attr, ctrl, $transclude) {
+            link: function ($scope, $element, $attr, ngModel, $transclude) {
                 var block, childScope, previousElements;
 
                 if ($scope.form.complexValidationMessage) {

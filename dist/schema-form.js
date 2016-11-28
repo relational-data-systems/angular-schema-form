@@ -692,13 +692,13 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                                 }
 
                                 angular.forEach(element.children(), function(child) {
-
                                   child.setAttribute(
                                       'complex-validation',
                                       evalExpr
                                   );
                                 });
                               }
+
                               $compile(element.contents())(scope);
                             });
 
@@ -1014,6 +1014,7 @@ angular.module('schemaForm').provider('schemaFormDecorators',
       createDirective('sfDecorator');
 
     }]);
+
 angular.module('schemaForm').provider('sfErrorMessage', function() {
 
   // The codes are tv4 error codes.
@@ -2002,7 +2003,7 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
             // the parsed value, ex. a number instead of a string
             priority: 500,
             require: '?ngModel',
-            link: function ($scope, $element, $attr, ctrl, $transclude) {
+            link: function ($scope, $element, $attr, ngModel, $transclude) {
                 var block, childScope, previousElements;
 
                 if ($scope.form.complexValidationMessage) {
@@ -2039,7 +2040,12 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
             }
         };
     }]);
-angular.module('schemaForm').directive('sfField',
+
+/**
+ * Default angular-schema-form directive, not currently used
+ * TODO: confirm this is the case, as this directive does not handle complexValidation events.
+ */
+angular.module('schemaForm').directive('old-sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
      'sfPath','sfSelect',
     function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
@@ -2203,6 +2209,9 @@ angular.module('schemaForm').directive('sfField',
               scope.$on(
                 'schemaForm.error.' + form.key.join('.'),
                 function(event, error, validationMessage, validity, formName) {
+
+                  console.log('field.js triggered!');
+
                   // validationMessage and validity are mutually exclusive
                   formName = validity;
                   if (validationMessage === true || validationMessage === false) {
@@ -2657,6 +2666,102 @@ function(sel, sfPath, schemaForm) {
   };
 }]);
 
+(function() {
+  'use strict';
+
+  angular.module('schemaForm').directive('remoteValidation', remoteValidation);
+
+  remoteValidation.$inject = ['$log', '$interpolate', '$http', '$compile'];
+
+  function remoteValidation($log, $interpolate, $http, $compile) {
+    var directive = {
+      restrict: 'A',
+      scope: false,
+      priority: 500,
+      require: '^ngModel',
+      link: link
+    };
+    return directive;
+
+    function link($scope, element, attrs, ctrl) {
+
+      // FIXME: make the annotation not render at all if not in use.
+      if (!$scope.form.remoteValidation){
+        return;
+      }
+
+      var form = $scope.form;
+      var model = $scope.model;
+
+      _setupErrorMsgs();
+      _watchInput();
+
+      function _watchInput() {
+        // append model and double braces pre-interpolation eg; {{model.}}
+        var regex_interpolate = /({)([^}]*)(})/gm;
+        var _validationTemplateUrl = form.remoteValidation.replace(regex_interpolate, '$1$1 model.$2 $3$3');
+
+        $scope.$watch("model." + form.key.join('.'), function(newValue, oldValue) {
+          if (newValue) {
+            var exp = $interpolate(_validationTemplateUrl, false, null, true);
+            var interpolatedUrl = exp($scope);
+            _validate(interpolatedUrl);
+          }
+        });
+      }
+
+      function _validate(interpolatedUrl) {
+
+        $http({
+          method: 'GET',
+          url: interpolatedUrl
+        }).then(function(response) {
+          // expects a JSON object with a single boolean as a response.
+          var result = response.data.validation;
+          _broadcastErrorMsgs(result);
+        }).catch(function(response) {angular-schema-form-bootstrap
+          // TODO: Do nothing for now. Should display message such as 'HTTP Error: Unable to validate data'
+        });
+      }
+
+      // setup validation messages as an array
+      function _setupErrorMsgs(){
+        if ($scope.form.remoteValidationMessage) {
+            if (!$scope.form.validationMessage) {
+                $scope.form.validationMessage = {};
+            } else if (typeof $scope.form.validationMessage === "string") {
+                // take validationMessage and shoehorn it into a new array of messages
+                var defaultValidationMessage = $scope.form.validationMessage;
+                $scope.form.validationMessage = {};
+                $scope.form.validationMessage["202"] = defaultValidationMessage;
+            }
+            $scope.form.validationMessage['remoteValidation'] = $scope.form.remoteValidationMessage;
+        }
+      }
+
+      // broadcast validation errors
+      function _broadcastErrorMsgs(result){
+        if (result) {
+            $scope.form.remoteValidationResult = true;
+            if ($scope.ngModel.$$parentForm.$dirty)
+                $scope.$root.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'remoteValidation', true);
+        } else {
+            $scope.form.remoteValidationResult = false;
+            //FIXME: copied from complex-validation.js does not check til root of document
+            var isFormDirty = $scope.ngModel.$$parentForm.$dirty
+            if (!isFormDirty && $scope.ngModel.$$parentForm.$$parentForm){
+                isFormDirty = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
+            }
+            if (isFormDirty){
+                $scope.$root.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'remoteValidation', false);
+            }
+        }
+      }
+    }
+  }
+
+})();
+
 /*
 FIXME: real documentation
 <form sf-form="form"  sf-schema="schema" sf-decorator="foobar"></form>
@@ -2889,11 +2994,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           });
         };
 
-
-        // Validate against the schema.
-
+        // Validate against the schema
         var validate = function(viewValue) {
-          //console.log('validate called', viewValue)
+          console.log('validate called', viewValue)
           //Still might be undefined
           if (!form) {
             return viewValue;
@@ -2909,13 +3012,15 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           if(form.type!=='uiselectmultiple') 	 {
             var result =  sfValidator.validate(form, viewValue);
           }
-          //console.log('result is', result)
+          console.log('result is', result)
           // Since we might have different tv4 errors we must clear all
           // errors that start with tv4-
           Object.keys(ngModel.$error)
               .filter(function(k) { return k.indexOf('tv4-') === 0; })
               .forEach(function(k) { ngModel.$setValidity(k, true); });
           ngModel.$setValidity('complexValidation' , true);
+          ngModel.$setValidity('remoteValidation' , true);
+
           if (!result.valid) {
             // it is invalid, return undefined (no model update)
             ngModel.$setValidity('tv4-' + result.error.code, false);
@@ -2931,9 +3036,16 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
+            console.log('schema-validate - not valid ' );
             if(form.complexValidationResult===false) {
+              console.log('schema-validate - complex complexValidationResult===false  ');
               ngModel.$setValidity('complexValidation' , false);
               error = {'code':'complexValidation'};
+              return viewValue;
+            }else if(form.remoteValidationResult===false) {
+              console.log('schema-validate - remote remoteValidationResult===false  ');
+              ngModel.$setValidity('remoteValidation' , false);
+              error = {'code':'remoteValidation'};
               return viewValue;
             } else {
               return viewValue;
@@ -2974,7 +3086,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&&e !== 'complexValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'complexValidation' && e !== 'remoteValidation';});
           };
         }
 
@@ -3010,11 +3122,16 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
+            // FIXME: i think this should handle more than one case at a time if we wan't multiple messages displayed per field?
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
             } else if (form.complexValidationResult === false ) {
               ngModel.$setValidity('complexValidation', false);
             } else if(form.complexValidationResult){
+              ngModel.$setValidity('complexValidation', true);
+            } else if(form.remoteValidationResult === false){
+              ngModel.$setValidity('remoteValidation', false);
+            } else if(form.remoteValidationResult){
               ngModel.$setValidity('complexValidation', true);
             }
 
@@ -3039,6 +3156,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
         // Listen to an event so we can validate the input on request
         scope.$on('schemaFormValidate', function(event, formName) {
+          console.log('schema-validate - schemaFormValidate event recieved! ' );
           scope.validateField(formName);
         });
 
@@ -3048,6 +3166,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
       }
     };
   }]);
+
 /**
  * Created by Luke on 31/08/2016.
  */
@@ -3176,6 +3295,7 @@ angular.module('schemaForm').directive('sfField',
                         };
 
                         scope.hasError = function() {
+                            //console.log('sf-field - hasError() called');
                             if (!scope.ngModel) {
                                 return false;
                             }
@@ -3215,10 +3335,22 @@ angular.module('schemaForm').directive('sfField',
                             scope.$on(
                                 'schemaForm.error.' + form.key.join('.'),
                                 function(event, error, validationMessage, validity) {
-                                    if("complexValidation" === error&&validationMessage===true&&!scope.ngModel.$error.complexValidation) {
+
+                                    console.log('sf-field - schemaForm.error.* event recieved');
+                                    console.log('sf-field -', error);
+                                    console.log('sf-field -', validationMessage);
+                                    console.log('sf-field -', validity);
+
+                                    if("complexValidation" === error
+                                      &&validationMessage===true
+                                      &&!scope.ngModel.$error.complexValidation) {
+                                        console.log('sf-field - premature return');
                                         return;
                                     }
+                                    console.log('sf-field - no premature return');
+
                                     if (validationMessage === true || validationMessage === false) {
+                                        console.log('sf-field - message valid');
                                         validity = validationMessage;
                                         validationMessage = undefined;
                                     }
@@ -3306,5 +3438,6 @@ angular.module('schemaForm').directive('sfField',
             };
         }
     ]);
+
 return schemaForm;
 }));

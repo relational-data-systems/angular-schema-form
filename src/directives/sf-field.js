@@ -126,6 +126,7 @@ angular.module('schemaForm').directive('sfField',
                         };
 
                         scope.hasError = function() {
+                            //console.log('sf-field - hasError() called');
                             if (!scope.ngModel) {
                                 return false;
                             }
@@ -165,10 +166,22 @@ angular.module('schemaForm').directive('sfField',
                             scope.$on(
                                 'schemaForm.error.' + form.key.join('.'),
                                 function(event, error, validationMessage, validity) {
-                                    if("complexValidation" === error&&validationMessage===true&&!scope.ngModel.$error.complexValidation) {
+
+                                    console.log('sf-field - schemaForm.error.* event recieved');
+                                    console.log('sf-field -', error);
+                                    console.log('sf-field -', validationMessage);
+                                    console.log('sf-field -', validity);
+
+                                    if("complexValidation" === error
+                                      &&validationMessage===true
+                                      &&!scope.ngModel.$error.complexValidation) {
+                                        console.log('sf-field - premature return');
                                         return;
                                     }
+                                    console.log('sf-field - no premature return');
+
                                     if (validationMessage === true || validationMessage === false) {
+                                        console.log('sf-field - message valid');
                                         validity = validationMessage;
                                         validationMessage = undefined;
                                     }

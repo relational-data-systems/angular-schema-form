@@ -229,13 +229,13 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                                 }
 
                                 angular.forEach(element.children(), function(child) {
-
                                   child.setAttribute(
                                       'complex-validation',
                                       evalExpr
                                   );
                                 });
                               }
+
                               $compile(element.contents())(scope);
                             });
 
