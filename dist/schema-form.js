@@ -2020,12 +2020,12 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
                 $scope.$watch($attr.complexValidation, function watchAction(value) {
 
                     if (value) {
-                        console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
+                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
                         $scope.form.complexValidationResult = true;
                         if ($scope.ngModel.$$parentForm.$dirty)
                             $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'complexValidation', true);
                     } else {
-                        console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
+                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
                         $scope.form.complexValidationResult = false;
 
                         //FIXME, check till root form
@@ -2996,7 +2996,6 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
         // Validate against the schema
         var validate = function(viewValue) {
-          console.log('validate called', viewValue)
           //Still might be undefined
           if (!form) {
             return viewValue;
@@ -3012,7 +3011,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           if(form.type!=='uiselectmultiple') 	 {
             var result =  sfValidator.validate(form, viewValue);
           }
-          console.log('result is', result)
+          //console.log('result is', result)
           // Since we might have different tv4 errors we must clear all
           // errors that start with tv4-
           Object.keys(ngModel.$error)
@@ -3036,14 +3035,11 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
-            console.log('schema-validate - not valid ' );
             if(form.complexValidationResult===false) {
-              console.log('schema-validate - complex complexValidationResult===false  ');
               ngModel.$setValidity('complexValidation' , false);
               error = {'code':'complexValidation'};
               return viewValue;
             }else if(form.remoteValidationResult===false) {
-              console.log('schema-validate - remote remoteValidationResult===false  ');
               ngModel.$setValidity('remoteValidation' , false);
               error = {'code':'remoteValidation'};
               return viewValue;
@@ -3156,7 +3152,6 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
         // Listen to an event so we can validate the input on request
         scope.$on('schemaFormValidate', function(event, formName) {
-          console.log('schema-validate - schemaFormValidate event recieved! ' );
           scope.validateField(formName);
         });
 
@@ -3336,21 +3331,21 @@ angular.module('schemaForm').directive('sfField',
                                 'schemaForm.error.' + form.key.join('.'),
                                 function(event, error, validationMessage, validity) {
 
-                                    console.log('sf-field - schemaForm.error.* event recieved');
-                                    console.log('sf-field -', error);
-                                    console.log('sf-field -', validationMessage);
-                                    console.log('sf-field -', validity);
-
+                                    // If ComplexValidation passed, we don't need to do anything.
                                     if("complexValidation" === error
                                       &&validationMessage===true
                                       &&!scope.ngModel.$error.complexValidation) {
-                                        console.log('sf-field - premature return');
                                         return;
                                     }
-                                    console.log('sf-field - no premature return');
+
+                                    // If RemoteValidation passed, we don't need to do anything.
+                                    if("remoteValidation" === error
+                                      &&validationMessage===true
+                                      &&!scope.ngModel.$error.remoteValidation) {
+                                        return;
+                                    }
 
                                     if (validationMessage === true || validationMessage === false) {
-                                        console.log('sf-field - message valid');
                                         validity = validationMessage;
                                         validationMessage = undefined;
                                     }

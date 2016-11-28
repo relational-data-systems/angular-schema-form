@@ -167,21 +167,21 @@ angular.module('schemaForm').directive('sfField',
                                 'schemaForm.error.' + form.key.join('.'),
                                 function(event, error, validationMessage, validity) {
 
-                                    console.log('sf-field - schemaForm.error.* event recieved');
-                                    console.log('sf-field -', error);
-                                    console.log('sf-field -', validationMessage);
-                                    console.log('sf-field -', validity);
-
+                                    // If ComplexValidation passed, we don't need to do anything.
                                     if("complexValidation" === error
                                       &&validationMessage===true
                                       &&!scope.ngModel.$error.complexValidation) {
-                                        console.log('sf-field - premature return');
                                         return;
                                     }
-                                    console.log('sf-field - no premature return');
+
+                                    // If RemoteValidation passed, we don't need to do anything.
+                                    if("remoteValidation" === error
+                                      &&validationMessage===true
+                                      &&!scope.ngModel.$error.remoteValidation) {
+                                        return;
+                                    }
 
                                     if (validationMessage === true || validationMessage === false) {
-                                        console.log('sf-field - message valid');
                                         validity = validationMessage;
                                         validationMessage = undefined;
                                     }
