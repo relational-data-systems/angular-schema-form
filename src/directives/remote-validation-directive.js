@@ -17,7 +17,7 @@
 
     function link($scope, element, attrs, ctrl) {
 
-      // FIXME: make the annotation not render at all if not in use.
+      // FIXME: make the directive not render at all if not in use.
       if (!$scope.form.remoteValidation){
         return;
       }
