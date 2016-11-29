@@ -11,7 +11,7 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
             // the parsed value, ex. a number instead of a string
             priority: 500,
             require: '?ngModel',
-            link: function ($scope, $element, $attr, ctrl, $transclude) {
+            link: function ($scope, $element, $attr, ngModel, $transclude) {
                 var block, childScope, previousElements;
 
                 if ($scope.form.complexValidationMessage) {
@@ -28,12 +28,12 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
                 $scope.$watch($attr.complexValidation, function watchAction(value) {
 
                     if (value) {
-                        console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
+                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
                         $scope.form.complexValidationResult = true;
                         if ($scope.ngModel.$$parentForm.$dirty)
                             $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'complexValidation', true);
                     } else {
-                        console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
+                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
                         $scope.form.complexValidationResult = false;
 
                         //FIXME, check till root form

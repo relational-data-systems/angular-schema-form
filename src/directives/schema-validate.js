@@ -26,11 +26,8 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           });
         };
 
-
-        // Validate against the schema.
-
+        // Validate against the schema
         var validate = function(viewValue) {
-          //console.log('validate called', viewValue)
           //Still might be undefined
           if (!form) {
             return viewValue;
@@ -53,6 +50,8 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
               .filter(function(k) { return k.indexOf('tv4-') === 0; })
               .forEach(function(k) { ngModel.$setValidity(k, true); });
           ngModel.$setValidity('complexValidation' , true);
+          ngModel.$setValidity('remoteValidation' , true);
+
           if (!result.valid) {
             // it is invalid, return undefined (no model update)
             ngModel.$setValidity('tv4-' + result.error.code, false);
@@ -71,6 +70,10 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             if(form.complexValidationResult===false) {
               ngModel.$setValidity('complexValidation' , false);
               error = {'code':'complexValidation'};
+              return viewValue;
+            }else if(form.remoteValidationResult===false) {
+              ngModel.$setValidity('remoteValidation' , false);
+              error = {'code':'remoteValidation'};
               return viewValue;
             } else {
               return viewValue;
@@ -111,7 +114,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&&e !== 'complexValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'complexValidation' && e !== 'remoteValidation';});
           };
         }
 
@@ -147,11 +150,16 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
+            // FIXME: i think this should handle more than one case at a time if we wan't multiple messages displayed per field?
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
             } else if (form.complexValidationResult === false ) {
               ngModel.$setValidity('complexValidation', false);
             } else if(form.complexValidationResult){
+              ngModel.$setValidity('complexValidation', true);
+            } else if(form.remoteValidationResult === false){
+              ngModel.$setValidity('remoteValidation', false);
+            } else if(form.remoteValidationResult){
               ngModel.$setValidity('complexValidation', true);
             }
 

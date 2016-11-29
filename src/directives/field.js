@@ -1,4 +1,8 @@
-angular.module('schemaForm').directive('sfField',
+/**
+ * Default angular-schema-form directive, not currently used
+ * TODO: confirm this is the case, as this directive does not handle complexValidation events.
+ */
+angular.module('schemaForm').directive('old-sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
      'sfPath','sfSelect',
     function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
@@ -162,6 +166,9 @@ angular.module('schemaForm').directive('sfField',
               scope.$on(
                 'schemaForm.error.' + form.key.join('.'),
                 function(event, error, validationMessage, validity, formName) {
+
+                  console.log('field.js triggered!');
+
                   // validationMessage and validity are mutually exclusive
                   formName = validity;
                   if (validationMessage === true || validationMessage === false) {

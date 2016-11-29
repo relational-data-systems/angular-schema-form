@@ -126,6 +126,7 @@ angular.module('schemaForm').directive('sfField',
                         };
 
                         scope.hasError = function() {
+                            //console.log('sf-field - hasError() called');
                             if (!scope.ngModel) {
                                 return false;
                             }
@@ -165,9 +166,21 @@ angular.module('schemaForm').directive('sfField',
                             scope.$on(
                                 'schemaForm.error.' + form.key.join('.'),
                                 function(event, error, validationMessage, validity) {
-                                    if("complexValidation" === error&&validationMessage===true&&!scope.ngModel.$error.complexValidation) {
+
+                                    // If ComplexValidation passed, we don't need to do anything.
+                                    if("complexValidation" === error
+                                      &&validationMessage===true
+                                      &&!scope.ngModel.$error.complexValidation) {
                                         return;
                                     }
+
+                                    // If RemoteValidation passed, we don't need to do anything.
+                                    if("remoteValidation" === error
+                                      &&validationMessage===true
+                                      &&!scope.ngModel.$error.remoteValidation) {
+                                        return;
+                                    }
+
                                     if (validationMessage === true || validationMessage === false) {
                                         validity = validationMessage;
                                         validationMessage = undefined;
