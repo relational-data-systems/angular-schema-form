@@ -111,50 +111,22 @@ angular.module('schemaForm').directive('sfField',
                         };
 
                         scope.modelValue = function(valueToSet) {
+                            // kelin: Some times the outside "scope" variable refers to a different
+                            // (seems scope.$parent) scope other than "this". So we override it
+                            // during this function call
+                            var scope = this;
                             return sfModelValue(scope, valueToSet);
                         };
 
                         scope.interpArrayIndex = function(str) {
-                            var arrayIndices = _getArrayIndicesByScopeHierarchy();
+                            var scope = this;
+                            return sfModelValue.interpArrayIndex(scope, str);
                         };
 
                         scope.getModelPath = function() {
-                            if (!scope.form || !scope.form.key || !scope.model) {
-                                return null;
-                            }
-
-                            var arrayIndices = _getArrayIndicesByScopeHierarchy();
-                            var modelPath = angular.copy(scope.form.key);
-                            for (var i = modelPath.length - 1; i >= 0; i--) {
-                                if (modelPath[i] === '') {
-                                    if (arrayIndices.length > 0) {
-                                        var scopeArrayIndex = arrayIndices.splice(-1, 1)[0];
-                                        modelPath[i] = scopeArrayIndex;
-                                    } else {
-                                        $log.error("sfField#scope.getModelPath - Cannot find any more array index for the mode path", arrayIndices, modelPath);
-                                    }
-                                } 
-                            }
-
-                            if (arrayIndices.length !== 0) {
-                                $log.error("sfField#scope.getModelPath - array indices found along the scope hierarcy does not match to model path", arrayIndices, modelPath);
-                            }
-                            return modelPath;
+                            var scope = this;
+                            return sfModelValue.getSfModelPath(scope);
                         };
-
-                        function _getArrayIndicesByScopeHierarchy() {
-                            var result = [];
-                            var currentScope = scope;
-                            while (currentScope) {
-                              var index = currentScope.$index;
-                              if (angular.isNumber(index)) {
-                                result.unshift(index);
-                                currentScope = currentScope.$parent; // Skip one more level out of the ng-repeat
-                              }
-                              currentScope = currentScope.$parent;
-                            }
-                            return result;
-                        }
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
                         scope.hasSuccess = function() {
