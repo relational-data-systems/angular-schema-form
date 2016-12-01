@@ -125,7 +125,7 @@ angular.module('schemaForm').directive('sfField',
 
                         scope.getModelPath = function() {
                             var scope = this;
-                            return sfModelValue.getSfModelPath(scope);
+                            return sfModelValue.getModelPath(scope);
                         };
 
                         //This works since we get the ngModel from the array or the schema-validate directive.

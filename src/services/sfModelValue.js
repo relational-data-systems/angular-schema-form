@@ -9,7 +9,7 @@
 
   /* @ngInject */
   function sfModelValue(sfPath, $rootScope, sfSelect, $log) {
-    service.getSfModelPath = getSfModelPath;
+    service.getModelPath = getModelPath;
     service.interpArrayIndex = interpArrayIndex;
     return service;
 
@@ -28,10 +28,10 @@
       // if the projection and obj is not specified by the user.
       scope = param1;
       if (param2 === undefined && param3 === undefined && param4 === undefined) {
-        projection = getSfModelPath(scope);
+        projection = getModelPath(scope);
         obj = scope.model;
       } else if (param2 !== undefined && param3 === undefined && param4 === undefined) {
-        projection = getSfModelPath(scope);
+        projection = getModelPath(scope);
         obj = scope.model;
         valueToSet = param2;
       } else if (param2 !== undefined && param3 !== undefined && param4 === undefined) {
@@ -49,7 +49,7 @@
       return sfSelect(projection, obj, valueToSet);
     }
 
-    function getSfModelPath(scope) {
+    function getModelPath(scope) {
       if (!scope.form || !scope.form.key || !scope.model) {
         return null;
       }
@@ -62,12 +62,12 @@
             var scopeArrayIndex = arrayIndices.splice(-1, 1)[0];
             modelPath[i] = scopeArrayIndex;
           } else {
-            $log.error("sfModelValue#getSfModelPath - Cannot find any more array index for the model path", arrayIndices, modelPath);
+            $log.error("sfModelValue#getModelPath - Cannot find any more array index for the model path", arrayIndices, modelPath);
           }
         } 
       }
       if (arrayIndices.length !== 0) {
-        $log.error("sfModelValue#getSfModelPath - array indices found along the scope hierarcy does not match to model path", arrayIndices, modelPath);
+        $log.error("sfModelValue#getModelPath - array indices found along the scope hierarcy does not match to model path", arrayIndices, modelPath);
       }
       return modelPath;
     }
