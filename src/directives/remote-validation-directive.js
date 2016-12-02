@@ -29,21 +29,41 @@
       _watchInput();
 
       function _watchInput() {
-        // append model and double braces pre-interpolation eg; {{model.}}
+        // append model and double braces pre-interpolation eg; {{model.}} to all watched model items
         var regex_interpolate = /({)([^}]*)(})/gm;
         var _validationTemplateUrl = form.remoteValidation.replace(regex_interpolate, '$1$1 model.$2 $3$3');
 
-        $scope.$watch("model." + form.key.join('.'), function(newValue, oldValue) {
-          if (newValue) {
-            var exp = $interpolate(_validationTemplateUrl, false, null, true);
-            var interpolatedUrl = exp($scope);
-            _validate(interpolatedUrl);
+        var reqex_source = /{{([^}]*)}}/gm;
+
+        // when values are equal no replacement was made and hence no model attributes matched
+        if (_validationTemplateUrl === form.remoteValidation) {
+          // when there are no dependent fields, validate when the fields model value changes
+          $scope.$watch("model." + form.key.join('.'), function(newValue, oldValue) {
+            if (newValue) {
+              var exp = $interpolate(_validationTemplateUrl, false, null, true);
+              var interpolatedUrl = exp($scope);
+              _validate(interpolatedUrl);
+            }
+          });
+        }else {
+          // add a watch event to revalidate when any dependent model value changes
+          var matched;
+          while ((matched = reqex_source.exec(_validationTemplateUrl)) !== null) {
+            $scope.$watch(matched[1], function(newValue, oldValue) {
+              if (newValue) {
+                // FIXME: interpolate does not handle undefined values very well, model attributes should be checked and
+                // substituted for an empty string. This works for now, will update this soon. -- Chris W
+                var exp = $interpolate(_validationTemplateUrl, false, null, true);
+                var interpolatedUrl = exp($scope);
+                _validate(interpolatedUrl);
+              }
+            });
           }
-        });
+        }
       }
 
       function _validate(interpolatedUrl) {
-
+        //console.log('HTTPO req -- ', interpolatedUrl);
         $http({
           method: 'GET',
           url: interpolatedUrl
@@ -51,7 +71,7 @@
           // expects a JSON object with a single boolean as a response.
           var result = response.data.validation;
           _broadcastErrorMsgs(result);
-        }).catch(function(response) {angular-schema-form-bootstrap
+        }).catch(function(response) {
           // TODO: Do nothing for now. Should display message such as 'HTTP Error: Unable to validate data'
         });
       }
