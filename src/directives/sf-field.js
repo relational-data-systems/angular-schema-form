@@ -3,9 +3,9 @@
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect',
+        'sfPath','sfSelect', 'sfModelValue', '$log',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect) {
+                 sfPath, sfSelect, sfModelValue, $log) {
 
             return {
                 restrict: 'AE',
@@ -108,6 +108,24 @@ angular.module('schemaForm').directive('sfField',
                          */
                         scope.interp = function(expression, locals) {
                             return (expression && $interpolate(expression)(locals));
+                        };
+
+                        scope.modelValue = function(valueToSet) {
+                            // kelin: Some times the outside "scope" variable refers to a different
+                            // (seems scope.$parent) scope other than "this". So we override it
+                            // during this function call
+                            var scope = this;
+                            return sfModelValue(scope, valueToSet);
+                        };
+
+                        scope.interpArrayIndex = function(str) {
+                            var scope = this;
+                            return sfModelValue.interpArrayIndex(scope, str);
+                        };
+
+                        scope.getModelPath = function() {
+                            var scope = this;
+                            return sfModelValue.getModelPath(scope);
                         };
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
