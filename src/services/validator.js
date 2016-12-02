@@ -36,6 +36,13 @@ angular.module('schemaForm').factory('sfValidator', [function() {
       value = undefined;
     }
 
+    // kelin: we want text, date fields to be as above as well
+    if (["", "text", "textarea", "date"].indexOf(form.type) !== -1) {
+      if (value === null) {
+        value = undefined;
+      }
+    }
+
     // kelin - our own workaround for null value being rejected in select components
     // due to typeof(null) === 'object'
     if (["select", "rds-dynamic-single-select", "rds-dynamic-radios", "radios-inline", "radiobuttons"].indexOf(form.type) !== -1) {
