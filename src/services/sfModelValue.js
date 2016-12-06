@@ -104,9 +104,9 @@
         throw scope + " does not have a form object";
       }
 
-      if (!scope.form.key) {
-        throw scope + " does not have a form key";
-      }
+      // if (!scope.form.key) {
+      //   throw scope + " does not have a form key";
+      // }
 
       if (!scope.model) {
         throw "there is no model in this scope";
