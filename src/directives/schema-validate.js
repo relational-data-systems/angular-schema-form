@@ -171,11 +171,15 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           }
         };
 
+        // TODO: This seems like a hack, but it's what is happening on the schemaform demo page? first was previously scope.firstDigest
+        // It solves the problem of forms validating when a condition passes and new fields are shown though
+        var first = true;
         ngModel.$formatters.push(function(val) {
           // When a form first loads this will be called for each field.
           // we usually don't want that.
-          if (ngModel.$pristine  && scope.firstDigest &&
+          if (ngModel.$pristine  && first &&
               (!scope.options || scope.options.validateOnRender !== true))  {
+            first = false; // added with fix
             return val;
           }
           validate(ngModel.$modelValue);
