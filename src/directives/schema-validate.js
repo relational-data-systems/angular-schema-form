@@ -151,6 +151,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
             // FIXME: i think this should handle more than one case at a time if we wan't multiple messages displayed per field?
+			ngModel.$setValidity('tv4-302', true); //hotfix for not reset required validation
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
             } else if (form.complexValidationResult === false ) {
