@@ -129,7 +129,10 @@ angular.module('schemaForm').directive('sfField',
                         };
 
                         scope.encodeURIComponent = function(uriComponent) {
-                            return encodeURIComponent(uriComponent);
+                            if (uriComponent !== undefined && uriComponent !== null && uriComponent !== "") {
+                                return encodeURIComponent(uriComponent);
+                            }
+                            return "";
                         };
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
