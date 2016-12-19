@@ -177,7 +177,7 @@ angular.module('schemaForm').provider('schemaForm',
         var path = options.path.slice();
         path.push(k);
         if (options.ignore[sfPathProvider.stringify(path)] !== true) {
-          var required = schema.required && schema.required.indexOf(k) !== -1;
+          var required = Array.isArray(schema.required)? schema.required.indexOf(k) !== -1 : schema.required;
 
           var def = defaultFormDefinition(k, v, {
             path: path,
@@ -205,8 +205,7 @@ angular.module('schemaForm').provider('schemaForm',
       f.key   = options.path;
       options.lookup[sfPathProvider.stringify(options.path)] = f;
 
-      var required = schema.required &&
-                     schema.required.indexOf(options.path[options.path.length - 1]) !== -1;
+      var required = Array.isArray(schema.required)? schema.required.indexOf(options.path[options.path.length - 1]) !== -1 : schema.required;
 
       // The default is to always just create one child. This works since if the
       // schemas items declaration is of type: "object" then we get a fieldset.
@@ -411,12 +410,12 @@ angular.module('schemaForm').provider('schemaForm',
       if (stripNullType(schema.type) === 'object') {
         angular.forEach(schema.properties, function(v, k) {
           if (ignore[k] !== true) {
-            var required = schema.required && schema.required.indexOf(k) !== -1;
+            var required = Array.isArray(schema.required)? schema.required.indexOf(k) !== -1 : schema.required;
             var def = defaultFormDefinition(k, v, {
               path: [k],         // Path to this property in bracket notation.
               lookup: lookup,    // Extra map to register with. Optimization for merger.
               ignore: ignore,    // The ignore list of paths (sans root level name)
-              required: required, // Is it required? (v4 json schema style)
+              required: required || false, // Is it required? (v4 json schema style)
               global: globalOptions // Global options, including form defaults
             });
             if (def) {
