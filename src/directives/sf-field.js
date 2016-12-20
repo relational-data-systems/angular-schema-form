@@ -292,7 +292,7 @@ angular.module('schemaForm').directive('sfField',
 
                         if (form.focusOnStart === true) {
                             $timeout(function() {
-                                angular.element('input, select, textarea', element).focus();
+                                angular.element('input, select, textarea', element).first().focus();
                             });
                         }
                     }
