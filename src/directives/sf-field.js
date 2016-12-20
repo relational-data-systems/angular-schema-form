@@ -3,9 +3,9 @@
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect', 'sfModelValue', '$log',
+        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout) {
 
             return {
                 restrict: 'AE',
@@ -287,6 +287,12 @@ angular.module('schemaForm').directive('sfField',
                                         }
                                     }
                                 }
+                            });
+                        }
+
+                        if (form.focusOnStart === true) {
+                            $timeout(function() {
+                                angular.element('input, select, textarea', element).focus();
                             });
                         }
                     }
