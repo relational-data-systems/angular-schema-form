@@ -3353,6 +3353,20 @@ angular.module('schemaForm').directive('sfField',
                             return "";
                         };
 
+                        scope.http = function(httpParams) {
+                            return $q(function(resolve, reject) {
+                                scope.httpPending = true;
+                                $http(httpParams)
+                                    .then(function(response) {
+                                        scope.httpPending = false;
+                                        resolve(response);
+                                    }, function(error) {
+                                        scope.httpPending = false;
+                                        reject(error);
+                                    });
+                            });
+                        }
+
                         //This works since we get the ngModel from the array or the schema-validate directive.
                         scope.hasSuccess = function() {
                             if (!scope.ngModel) {
