@@ -3,9 +3,9 @@
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout',
+        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', '$animate',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, $animate) {
 
             return {
                 restrict: 'AE',
@@ -135,19 +135,36 @@ angular.module('schemaForm').directive('sfField',
                             return "";
                         };
 
-                        scope.http = function(httpParams) {
+                        var spinnerTemplate = angular.element('<div style="position:relative"><div id="loading-bar-spinner"><div class="spinner-icon"></div></div></div>');
+
+                        scope.http = function(httpParams, /*Boolean*/addLoadingOverlayToElement) {
                             return $q(function(resolve, reject) {
                                 scope.httpPending = true;
+                                if (addLoadingOverlayToElement) {
+                                    $animate.enter(spinnerTemplate, element);
+                                }
                                 $http(httpParams)
                                     .then(function(response) {
-                                        scope.httpPending = false;
+                                        $timeout(function() {
+                                            scope.httpPending = false;
+                                            if (addLoadingOverlayToElement) {
+                                                $animate.leave(spinnerTemplate);
+                                            }
+                                        }, 1000);
                                         resolve(response);
                                     }, function(error) {
-                                        scope.httpPending = false;
+                                        $timeout(function() {
+                                            scope.httpPending = false;
+                                            if (addLoadingOverlayToElement) {
+                                                $animate.leave(spinnerTemplate);
+                                            }
+                                        }, 1000);
                                         reject(error);
                                     });
                             });
                         }
+
+
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
                         scope.hasSuccess = function() {
