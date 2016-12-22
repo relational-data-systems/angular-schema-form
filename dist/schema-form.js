@@ -3382,14 +3382,14 @@ angular.module('schemaForm').directive('sfField',
                             }
 
                             return $q(function(resolve, reject) {
-                                scope.httpPending = true;
+                                scope.form.httpPending = true;
                                 if (spinner) {
                                     $animate.enter(spinner, element);
                                 }
                                 $http(httpParams)
                                     .then(function(response) {
                                         $timeout(function() {
-                                            scope.httpPending = false;
+                                            scope.form.httpPending = false;
                                             if (spinner) {
                                                 $animate.leave(spinner);
                                             }
@@ -3397,7 +3397,7 @@ angular.module('schemaForm').directive('sfField',
                                         resolve(response);
                                     }, function(error) {
                                         $timeout(function() {
-                                            scope.httpPending = false;
+                                            scope.form.httpPending = false;
                                             if (spinner) {
                                                 $animate.leave(spinner);
                                             }
