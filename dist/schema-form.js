@@ -3221,9 +3221,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', '$animate',
+        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', '$animate', '$sce',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout, $animate) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, $animate, $sce) {
 
             return {
                 restrict: 'AE',
@@ -3353,30 +3353,55 @@ angular.module('schemaForm').directive('sfField',
                             return "";
                         };
 
-                        var spinnerTemplate = angular.element('<div style="position:relative"><div id="loading-bar-spinner"><div class="spinner-icon"></div></div></div>');
+                        var spinnerOverlayTemplateSmall = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-sm"></div></div></div>';
+                        var spinnerOverlayTemplateMiddle = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-md"></div></div></div>';
+                        var spinnerOverlayTemplateLarge = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-lg"></div></div></div>';
 
-                        scope.http = function(httpParams, /*Boolean*/addLoadingOverlayToElement) {
+                        scope.spinnerOverlaySmall = $sce.trustAsHtml(spinnerOverlayTemplateSmall);
+                        scope.spinnerOverlayMiddle = $sce.trustAsHtml(spinnerOverlayTemplateMiddle);
+                        scope.spinnerOverlayLarge= $sce.trustAsHtml(spinnerOverlayTemplateLarge);
+
+                        var spinnerSmall = angular.element(spinnerOverlayTemplateSmall);
+                        var spinnerMiddle = angular.element(spinnerOverlayTemplateMiddle);
+                        var spinnerLarge = angular.element(spinnerOverlayTemplateLarge);
+
+                        scope.http = function(httpParams) {
+                            var spinner = null;
+                            if (httpParams.spinner) {
+                                switch (httpParams.spinner) {
+                                    case 'sm':
+                                        spinner = spinnerSmall;
+                                    break;
+                                    case 'md':
+                                        spinner = spinnerMiddle;
+                                    break;
+                                    case 'lg':
+                                        spinner = spinnerLarge;
+                                    break;
+                                }
+                            }
+
                             return $q(function(resolve, reject) {
                                 scope.httpPending = true;
-                                if (addLoadingOverlayToElement) {
-                                    $animate.enter(spinnerTemplate, element);
+                                if (spinner) {
+                                    $animate.enter(spinner, element);
                                 }
                                 $http(httpParams)
                                     .then(function(response) {
                                         $timeout(function() {
                                             scope.httpPending = false;
-                                            if (addLoadingOverlayToElement) {
-                                                $animate.leave(spinnerTemplate);
+                                            if (spinner) {
+                                                $animate.leave(spinner);
                                             }
-                                        }, 1000);
+                                        }, 500);
                                         resolve(response);
                                     }, function(error) {
                                         $timeout(function() {
                                             scope.httpPending = false;
-                                            if (addLoadingOverlayToElement) {
-                                                $animate.leave(spinnerTemplate);
+                                            if (spinner) {
+                                                $animate.leave(spinner);
                                             }
-                                        }, 1000);
+                                        }, 500);
                                         reject(error);
                                     });
                             });
