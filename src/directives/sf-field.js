@@ -3,9 +3,9 @@
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout',
+        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', '$animate', '$sce',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, $animate, $sce) {
 
             return {
                 restrict: 'AE',
@@ -134,6 +134,62 @@ angular.module('schemaForm').directive('sfField',
                             }
                             return "";
                         };
+
+                        var spinnerOverlayTemplateSmall = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-sm"></div></div></div>';
+                        var spinnerOverlayTemplateMiddle = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-md"></div></div></div>';
+                        var spinnerOverlayTemplateLarge = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-lg"></div></div></div>';
+
+                        scope.spinnerOverlaySmall = $sce.trustAsHtml(spinnerOverlayTemplateSmall);
+                        scope.spinnerOverlayMiddle = $sce.trustAsHtml(spinnerOverlayTemplateMiddle);
+                        scope.spinnerOverlayLarge= $sce.trustAsHtml(spinnerOverlayTemplateLarge);
+
+                        var spinnerSmall = angular.element(spinnerOverlayTemplateSmall);
+                        var spinnerMiddle = angular.element(spinnerOverlayTemplateMiddle);
+                        var spinnerLarge = angular.element(spinnerOverlayTemplateLarge);
+
+                        scope.http = function(httpParams) {
+                            var spinner = null;
+                            if (httpParams.spinner) {
+                                switch (httpParams.spinner) {
+                                    case 'sm':
+                                        spinner = spinnerSmall;
+                                    break;
+                                    case 'md':
+                                        spinner = spinnerMiddle;
+                                    break;
+                                    case 'lg':
+                                        spinner = spinnerLarge;
+                                    break;
+                                }
+                            }
+
+                            return $q(function(resolve, reject) {
+                                scope.form.httpPending = true;
+                                if (spinner) {
+                                    $animate.enter(spinner, element);
+                                }
+                                $http(httpParams)
+                                    .then(function(response) {
+                                        $timeout(function() {
+                                            scope.form.httpPending = false;
+                                            if (spinner) {
+                                                $animate.leave(spinner);
+                                            }
+                                        }, 500);
+                                        resolve(response);
+                                    }, function(error) {
+                                        $timeout(function() {
+                                            scope.form.httpPending = false;
+                                            if (spinner) {
+                                                $animate.leave(spinner);
+                                            }
+                                        }, 500);
+                                        reject(error);
+                                    });
+                            });
+                        }
+
+
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
                         scope.hasSuccess = function() {
