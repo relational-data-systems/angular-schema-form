@@ -3,9 +3,9 @@
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', '$animate', '$sce',
+        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout, $animate, $sce) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService) {
 
             return {
                 restrict: 'AE',
@@ -135,57 +135,44 @@ angular.module('schemaForm').directive('sfField',
                             return "";
                         };
 
-                        var spinnerOverlayTemplateSmall = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-sm"></div></div></div>';
-                        var spinnerOverlayTemplateMiddle = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-md"></div></div></div>';
-                        var spinnerOverlayTemplateLarge = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-lg"></div></div></div>';
+                        // Angular tempaltes that have access to sf-field scope can use these pre-defined loading spinner
+                        // templates to cover a exact component in these templates:
+                        // 1. Use <div ng-show="form.httpPending" ng-bind-html="spinnerOverlaySmall|Middle|Large"></div>
+                        //    beside the exact component we want to cover.
+                        // 2. Use <div class="rds-spinner-container"></div> to enclose both the component and the overlay
+                        //    elements we just added.
+                        // Example: rds-dynamic-single-select.html
+                        scope.spinnerOverlayHtmlSmall = LoadingSpinnerService.spinnerOverlayHtmlSmall;
+                        scope.spinnerOverlayHtmlMiddle = LoadingSpinnerService.spinnerOverlayHtmlMiddle;
+                        scope.spinnerOverlayHtmlLarge = LoadingSpinnerService.spinnerOverlayHtmlLarge;
 
-                        scope.spinnerOverlaySmall = $sce.trustAsHtml(spinnerOverlayTemplateSmall);
-                        scope.spinnerOverlayMiddle = $sce.trustAsHtml(spinnerOverlayTemplateMiddle);
-                        scope.spinnerOverlayLarge= $sce.trustAsHtml(spinnerOverlayTemplateLarge);
-
-                        var spinnerSmall = angular.element(spinnerOverlayTemplateSmall);
-                        var spinnerMiddle = angular.element(spinnerOverlayTemplateMiddle);
-                        var spinnerLarge = angular.element(spinnerOverlayTemplateLarge);
-
-                        scope.http = function(httpParams) {
-                            var spinner = null;
-                            if (httpParams.spinner) {
-                                switch (httpParams.spinner) {
-                                    case 'sm':
-                                        spinner = spinnerSmall;
-                                    break;
-                                    case 'md':
-                                        spinner = spinnerMiddle;
-                                    break;
-                                    case 'lg':
-                                        spinner = spinnerLarge;
-                                    break;
-                                }
-                            }
-
+                        // If the second parameter "spinner" is specified. The specified spinner will be added to the
+                        // element of this sf-field scope during the http call. This is very useful for component
+                        // containers that do http calls, such as load-data-section.
+                        scope.http = function(httpParams, spinnerSize) {
                             return $q(function(resolve, reject) {
                                 scope.form.httpPending = true;
-                                if (spinner) {
-                                    $animate.enter(spinner, element);
+                                if (spinnerSize) {
+                                    LoadingSpinnerService.addSpinnerOverlay(spinnerSize, element);
                                 }
+
                                 $http(httpParams)
                                     .then(function(response) {
-                                        $timeout(function() {
-                                            scope.form.httpPending = false;
-                                            if (spinner) {
-                                                $animate.leave(spinner);
-                                            }
-                                        }, 500);
+                                        _resetPendingFlagAndSpinner();
                                         resolve(response);
                                     }, function(error) {
-                                        $timeout(function() {
-                                            scope.form.httpPending = false;
-                                            if (spinner) {
-                                                $animate.leave(spinner);
-                                            }
-                                        }, 500);
+                                        _resetPendingFlagAndSpinner();
                                         reject(error);
                                     });
+
+                                function _resetPendingFlagAndSpinner() {
+                                    $timeout(function() {
+                                        scope.form.httpPending = false;
+                                        if (spinnerSize) {
+                                            LoadingSpinnerService.removeSpinnerOverlay(spinnerSize, element);
+                                        }
+                                    }, 500);
+                                }
                             });
                         }
 
