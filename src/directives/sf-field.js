@@ -144,39 +144,7 @@ angular.module('schemaForm').directive('sfField',
                         // Example: rds-dynamic-single-select.html
                         scope.spinnerOverlayHtmlSmall = LoadingSpinnerService.spinnerOverlayHtmlSmall;
                         scope.spinnerOverlayHtmlMiddle = LoadingSpinnerService.spinnerOverlayHtmlMiddle;
-                        scope.spinnerOverlayHtmlLarge = LoadingSpinnerService.spinnerOverlayHtmlLarge;
-
-                        // If the second parameter "spinner" is specified. The specified spinner will be added to the
-                        // element of this sf-field scope during the http call. This is very useful for component
-                        // containers that do http calls, such as load-data-section.
-                        scope.http = function(httpParams, spinnerSize) {
-                            return $q(function(resolve, reject) {
-                                scope.form.httpPending = true;
-                                if (spinnerSize) {
-                                    LoadingSpinnerService.addSpinnerOverlay(spinnerSize, element);
-                                }
-
-                                $http(httpParams)
-                                    .then(function(response) {
-                                        _resetPendingFlagAndSpinner();
-                                        resolve(response);
-                                    }, function(error) {
-                                        _resetPendingFlagAndSpinner();
-                                        reject(error);
-                                    });
-
-                                function _resetPendingFlagAndSpinner() {
-                                    $timeout(function() {
-                                        scope.form.httpPending = false;
-                                        if (spinnerSize) {
-                                            LoadingSpinnerService.removeSpinnerOverlay(spinnerSize, element);
-                                        }
-                                    }, 500);
-                                }
-                            });
-                        }
-
-
+                        scope.spinnerOverlayHtmlLarge = LoadingSpinnerService.spinnerOverlayHtmlLarg;
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
                         scope.hasSuccess = function() {
