@@ -144,7 +144,7 @@ angular.module('schemaForm').directive('sfField',
                         // Example: rds-dynamic-single-select.html
                         scope.spinnerOverlayHtmlSmall = LoadingSpinnerService.spinnerOverlayHtmlSmall;
                         scope.spinnerOverlayHtmlMiddle = LoadingSpinnerService.spinnerOverlayHtmlMiddle;
-                        scope.spinnerOverlayHtmlLarge = LoadingSpinnerService.spinnerOverlayHtmlLarg;
+                        scope.spinnerOverlayHtmlLarge = LoadingSpinnerService.spinnerOverlayHtmlLarge;
 
                         //This works since we get the ngModel from the array or the schema-validate directive.
                         scope.hasSuccess = function() {
