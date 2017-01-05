@@ -1203,7 +1203,7 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
         if (form) {
           form.httpPending = true;
         }
-        if (overlayConfig) {
+        if (_isValidOverlayConfig(overlayConfig)) {
           addSpinnerOverlay(overlayConfig.spinnerSize, overlayConfig.element);
         }
 
@@ -1221,12 +1221,16 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
             if (form) {
               form.httpPending = false;
             }
-            if (overlayConfig) {
+            if (_isValidOverlayConfig(overlayConfig)) {
               removeSpinnerOverlay(overlayConfig.spinnerSize, overlayConfig.element);
             }
           }, 500);
         }
       }) 
+    }
+
+    function _isValidOverlayConfig(overlayConfig) {
+      return overlayConfig && overlayConfig.spinnerSize && overlayConfig.element;
     }
 
     function _getSpinnerOverlayElement(spinnerSize) {
