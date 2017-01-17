@@ -1870,6 +1870,22 @@ angular.module('schemaForm').factory('sfValidator', [function() {
 
   var validator = {};
 
+  function recResetNullValues(obj) {
+    for (var property in obj) {
+      if (obj.hasOwnProperty(property)) {
+        var propValue = obj[property];
+        if (propValue === null || propValue === undefined) {
+          delete obj[property];
+        } else if (typeof propValue === "object") {
+          recResetNullValues(obj[property], property);
+        } else {
+          if (obj[property] === null) {
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Validate a value against its form definition and schema.
    * The value should either be of proper type or a string, some type
@@ -1895,6 +1911,13 @@ angular.module('schemaForm').factory('sfValidator', [function() {
     // not validate if it's required.
     if (value === '') {
       value = undefined;
+    }
+
+    if (form.type === 'array') {
+      // A null or undefined in an array, or in its nested child at any level would cause
+      // the validation to fail. So we will simple remove the properties with these values
+      value = angular.copy(value);
+      recResetNullValues(value);
     }
 
     // Numbers fields will give a null value, which also means empty field
