@@ -24,12 +24,12 @@ module.exports = function(config) {
       'src/services/*.js',
       'src/directives/*.js',
       'bower_components/angular-schema-form-bootstrap/bootstrap-decorator.js',
-      'test/services/schema-form-test.js',
-      'test/services/decorators-test.js',
+      // 'test/services/schema-form-test.js',
+      // 'test/services/decorators-test.js',
       'test/services/validator-test.js',
-      'test/services/messages-test.js',
-      'test/directives/schema-form-test.js',
-      'test/directives/sf-messages-test.js',
+      // 'test/services/messages-test.js',
+      // 'test/directives/schema-form-test.js',
+      // 'test/directives/sf-messages-test.js',
     ],
 
     // list of files to exclude
