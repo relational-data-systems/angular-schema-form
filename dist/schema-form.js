@@ -1916,6 +1916,7 @@ angular.module('schemaForm').factory('sfValidator', [function() {
     if (form.type === 'array') {
       // A null or undefined in an array, or in its nested child at any level would cause
       // the validation to fail. So we will simple remove the properties with these values
+      value = angular.copy(value);
       recResetNullValues(value);
     }
 
