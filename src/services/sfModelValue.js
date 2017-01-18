@@ -117,7 +117,10 @@
       var result = [];
       var currentScope = scope;
       while (currentScope) {
-        var index = currentScope.$index;
+        var index = null;
+        if (currentScope.hasOwnProperty('$index')) {
+            index = currentScope.$index;
+        }
         if (angular.isNumber(index)) {
           result.unshift(index);
           currentScope = currentScope.$parent; // Skip one more level out of the ng-repeat
