@@ -2689,6 +2689,7 @@ function(sel, sfPath, schemaForm) {
   return {
     scope: false,
     link: function(scope, element, attrs) {
+
       scope.min = 0;
 
       scope.modelArray = scope.$eval(attrs.sfNewArray);
@@ -2739,7 +2740,7 @@ function(sel, sfPath, schemaForm) {
 
         // Always start with one empty form unless configured otherwise.
         // Special case: don't do it if form has a titleMap
-        if (!form.titleMap && form.startEmpty !== true && (!scope.modelArray || scope.modelArray.length === 0)) {
+        if (!form.titleMap && form.startEmpty && form.readonly !== true && (!scope.modelArray || scope.modelArray.length === 0)) {
           scope.appendToArray();
         }
 
