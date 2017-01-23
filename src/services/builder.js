@@ -144,32 +144,38 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
       }
     },
     array: function(args) {
-      var items = args.fieldFrag.querySelector('[schema-form-array-items]');
-      if (items) {
-        state = angular.copy(args.state);
-        state.keyRedaction = 0;
-        state.keyRedaction += args.form.key.length + 1;
+      // var items = args.fieldFrag.querySelector('[schema-form-array-items]');
+      var items = args.fieldFrag.querySelectorAll('[schema-form-array-items]');
+      // kelin: Now we have more than one elements that have schema-form-array-items in the
+      // component array template. Therefore need to use querySelectorAll
+      items.forEach(function(item) {
+        if (item) {
+          state = angular.copy(args.state);
+          state.keyRedaction = 0;
+          state.keyRedaction += args.form.key.length + 1;
 
-        // Special case, an array with just one item in it that is not an object.
-        // So then we just override the modelValue
-        if (args.form.schema && args.form.schema.items &&
-            args.form.schema.items.type &&
-            args.form.schema.items.type.indexOf('object') === -1 &&
-            args.form.schema.items.type.indexOf('array') === -1) {
-          var strKey = sfPathProvider.stringify(args.form.key).replace(/"/g, '&quot;') + '[$index]';
-          state.modelValue = 'modelArray[$index]';
-        } else {
-          state.modelName = 'item';
+          // Special case, an array with just one item in it that is not an object.
+          // So then we just override the modelValue
+          if (args.form.schema && args.form.schema.items &&
+              args.form.schema.items.type &&
+              args.form.schema.items.type.indexOf('object') === -1 &&
+              args.form.schema.items.type.indexOf('array') === -1) {
+            var strKey = sfPathProvider.stringify(args.form.key).replace(/"/g, '&quot;') + '[$index]';
+            state.modelValue = 'modelArray[$index]';
+          } else {
+            state.modelName = 'item';
+          }
+
+          // Flag to the builder that where in an array.
+          // This is needed for compatabiliy if a "old" add-on is used that
+          // hasn't been transitioned to the new builder.
+          state.arrayCompatFlag = true;
+
+          var childFrag = args.build(args.form.items, args.path + '.items', state);
+          item.appendChild(childFrag);
         }
+      });
 
-        // Flag to the builder that where in an array.
-        // This is needed for compatabiliy if a "old" add-on is used that
-        // hasn't been transitioned to the new builder.
-        state.arrayCompatFlag = true;
-
-        var childFrag = args.build(args.form.items, args.path + '.items', state);
-        items.appendChild(childFrag);
-      }
     },
     complexValidation: function(args) {
       // Do we have a condition? Then we slap on an ng-if on all children,
