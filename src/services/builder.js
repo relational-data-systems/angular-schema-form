@@ -148,7 +148,8 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
       var items = args.fieldFrag.querySelectorAll('[schema-form-array-items]');
       // kelin: Now we have more than one elements that have schema-form-array-items in the
       // component array template. Therefore need to use querySelectorAll
-      items.forEach(function(item) {
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
         if (item) {
           state = angular.copy(args.state);
           state.keyRedaction = 0;
@@ -174,7 +175,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
           var childFrag = args.build(args.form.items, args.path + '.items', state);
           item.appendChild(childFrag);
         }
-      });
+      }
 
     },
     complexValidation: function(args) {
