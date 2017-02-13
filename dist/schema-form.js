@@ -65,6 +65,81 @@ angular.module('schemaForm').provider('sfPath',
   };
 }]);
 
+/**
+ * @ngdoc service
+ * @name sfSelect
+ * @kind function
+ *
+ */
+angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
+  var numRe = /^\d+$/;
+
+  /**
+    * @description
+    * Utility method to access deep properties without
+    * throwing errors when things are not defined.
+    * Can also set a value in a deep structure, creating objects when missing
+    * ex.
+    * var foo = Select('address.contact.name',obj)
+    * Select('address.contact.name',obj,'Leeroy')
+    *
+    * @param {string} projection A dot path to the property you want to get/set
+    * @param {object} obj   (optional) The object to project on, defaults to 'this'
+    * @param {Any}    valueToSet (opional)  The value to set, if parts of the path of
+    *                 the projection is missing empty objects will be created.
+    * @returns {Any|undefined} returns the value at the end of the projection path
+    *                          or undefined if there is none.
+    */
+  return function(projection, obj, valueToSet) {
+    if (!obj) {
+      obj = this;
+    }
+    //Support [] array syntax
+    var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
+
+    if (typeof valueToSet !== 'undefined' && parts.length === 1) {
+      //special case, just setting one variable
+      obj[parts[0]] = valueToSet;
+      return obj;
+    }
+
+    if (typeof valueToSet !== 'undefined' &&
+        typeof obj[parts[0]] === 'undefined') {
+       // We need to look ahead to check if array is appropriate
+      obj[parts[0]] = parts.length > 2 && numRe.test(parts[1]) ? [] : {};
+    }
+
+    var value = obj[parts[0]];
+    for (var i = 1; i < parts.length; i++) {
+      // Special case: We allow JSON Form syntax for arrays using empty brackets
+      // These will of course not work here so we exit if they are found.
+      if (parts[i] === '') {
+        return undefined;
+      }
+      if (typeof valueToSet !== 'undefined') {
+        if (i === parts.length - 1) {
+          //last step. Let's set the value
+          value[parts[i]] = valueToSet;
+          return valueToSet;
+        } else {
+          // Make sure to create new objects on the way if they are not there.
+          // We need to look ahead to check if array is appropriate
+          var tmp = value[parts[i]];
+          if (typeof tmp === 'undefined' || tmp === null) {
+            tmp = numRe.test(parts[i + 1]) ? [] : {};
+            value[parts[i]] = tmp;
+          }
+          value = tmp;
+        }
+      } else if (value) {
+        //Just get nex value.
+        value = value[parts[i]];
+      }
+    }
+    return value;
+  };
+}]);
+
 
 // FIXME: type template (using custom builder)
 angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(sfPathProvider) {
@@ -1087,6 +1162,8 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
   /* @ngInject */
   function LoadingSpinnerService($log, $sce, $animate, $http, $q, $timeout) {
 
+    var DELAY_TO_REMOVE = 500;
+
     var spinnerOverlayTemplateSmall = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-sm"></div></div></div>';
     var spinnerOverlayTemplateMiddle = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-md"></div></div></div>';
     var spinnerOverlayTemplateLarge = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-lg"></div></div></div>';
@@ -1110,17 +1187,28 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
     this.removeSpinnerOverlay = removeSpinnerOverlay;
     this.httpWithSpinner = httpWithSpinner;
 
+    var _elemId2Spinner = {};
+
+    function _getUniqueId(targetElement) {
+      // Maybe there can be a better way to get a unique id ..?
+      targetElement.uniqueId();
+      return targetElement.prop("id");
+    }
+
     function addSpinnerOverlay(spinnerSize, targetElement) {
       var spinnerOverlayElement = _getSpinnerOverlayElement(spinnerSize);
       if (spinnerOverlayElement) {
+        _elemId2Spinner[_getUniqueId(targetElement)] = spinnerOverlayElement;
         $animate.enter(spinnerOverlayElement, targetElement);
       }
     }
 
-    function removeSpinnerOverlay(spinnerSize, targetElement) { //TODO: remove the first parameter
-      var spinnerOverlayElement = _getSpinnerOverlayElement(spinnerSize);
+    function removeSpinnerOverlay(targetElement) {
+      var uniqueId = _getUniqueId(targetElement);
+      var spinnerOverlayElement = _elemId2Spinner[uniqueId];
       if (spinnerOverlayElement) {
         $animate.leave(spinnerOverlayElement, targetElement);
+        delete _elemId2Spinner[uniqueId];
       }
     }
 
@@ -1128,7 +1216,7 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
      * @param {Object} httpParams params to pass to the $http service
      * @param {Object} form The form from angular schema form to put the "httpPending" flag on during the http call
      * @param {Object} overlayConfig {spinnerSize: 'sm|md|lg', element: jQlite}
-     * @return {Object} a form field defintion
+     * @return {Promise}
      */
     function httpWithSpinner(httpParams, form, overlayConfig) {
       return $q(function(resolve, reject) {
@@ -1154,11 +1242,11 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
               form.httpPending = false;
             }
             if (_isValidOverlayConfig(overlayConfig)) {
-              removeSpinnerOverlay(overlayConfig.spinnerSize, overlayConfig.element);
+              removeSpinnerOverlay(overlayConfig.element);
             }
-          }, 500);
+          }, DELAY_TO_REMOVE);
         }
-      }) 
+      })
     }
 
     function _isValidOverlayConfig(overlayConfig) {
@@ -1180,7 +1268,7 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
             break;
         }
       }
-      return spinnerOverlayElement;
+      return spinnerOverlayElement !== null ? angular.copy(spinnerOverlayElement) : null;
     }
 
   }
@@ -1663,81 +1751,6 @@ angular.module('schemaForm').provider('schemaForm',
     return service;
   };
 
-}]);
-
-/**
- * @ngdoc service
- * @name sfSelect
- * @kind function
- *
- */
-angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
-  var numRe = /^\d+$/;
-
-  /**
-    * @description
-    * Utility method to access deep properties without
-    * throwing errors when things are not defined.
-    * Can also set a value in a deep structure, creating objects when missing
-    * ex.
-    * var foo = Select('address.contact.name',obj)
-    * Select('address.contact.name',obj,'Leeroy')
-    *
-    * @param {string} projection A dot path to the property you want to get/set
-    * @param {object} obj   (optional) The object to project on, defaults to 'this'
-    * @param {Any}    valueToSet (opional)  The value to set, if parts of the path of
-    *                 the projection is missing empty objects will be created.
-    * @returns {Any|undefined} returns the value at the end of the projection path
-    *                          or undefined if there is none.
-    */
-  return function(projection, obj, valueToSet) {
-    if (!obj) {
-      obj = this;
-    }
-    //Support [] array syntax
-    var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
-
-    if (typeof valueToSet !== 'undefined' && parts.length === 1) {
-      //special case, just setting one variable
-      obj[parts[0]] = valueToSet;
-      return obj;
-    }
-
-    if (typeof valueToSet !== 'undefined' &&
-        typeof obj[parts[0]] === 'undefined') {
-       // We need to look ahead to check if array is appropriate
-      obj[parts[0]] = parts.length > 2 && numRe.test(parts[1]) ? [] : {};
-    }
-
-    var value = obj[parts[0]];
-    for (var i = 1; i < parts.length; i++) {
-      // Special case: We allow JSON Form syntax for arrays using empty brackets
-      // These will of course not work here so we exit if they are found.
-      if (parts[i] === '') {
-        return undefined;
-      }
-      if (typeof valueToSet !== 'undefined') {
-        if (i === parts.length - 1) {
-          //last step. Let's set the value
-          value[parts[i]] = valueToSet;
-          return valueToSet;
-        } else {
-          // Make sure to create new objects on the way if they are not there.
-          // We need to look ahead to check if array is appropriate
-          var tmp = value[parts[i]];
-          if (typeof tmp === 'undefined' || tmp === null) {
-            tmp = numRe.test(parts[i + 1]) ? [] : {};
-            value[parts[i]] = tmp;
-          }
-          value = tmp;
-        }
-      } else if (value) {
-        //Just get nex value.
-        value = value[parts[i]];
-      }
-    }
-    return value;
-  };
 }]);
 
 (function() {

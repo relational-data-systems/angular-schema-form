@@ -10,6 +10,8 @@
   /* @ngInject */
   function LoadingSpinnerService($log, $sce, $animate, $http, $q, $timeout) {
 
+    var DELAY_TO_REMOVE = 500;
+
     var spinnerOverlayTemplateSmall = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-sm"></div></div></div>';
     var spinnerOverlayTemplateMiddle = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-md"></div></div></div>';
     var spinnerOverlayTemplateLarge = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-lg"></div></div></div>';
@@ -33,17 +35,28 @@
     this.removeSpinnerOverlay = removeSpinnerOverlay;
     this.httpWithSpinner = httpWithSpinner;
 
+    var _elemId2Spinner = {};
+
+    function _getUniqueId(targetElement) {
+      // Maybe there can be a better way to get a unique id ..?
+      targetElement.uniqueId();
+      return targetElement.prop("id");
+    }
+
     function addSpinnerOverlay(spinnerSize, targetElement) {
       var spinnerOverlayElement = _getSpinnerOverlayElement(spinnerSize);
       if (spinnerOverlayElement) {
+        _elemId2Spinner[_getUniqueId(targetElement)] = spinnerOverlayElement;
         $animate.enter(spinnerOverlayElement, targetElement);
       }
     }
 
-    function removeSpinnerOverlay(spinnerSize, targetElement) { //TODO: remove the first parameter
-      var spinnerOverlayElement = _getSpinnerOverlayElement(spinnerSize);
+    function removeSpinnerOverlay(targetElement) {
+      var uniqueId = _getUniqueId(targetElement);
+      var spinnerOverlayElement = _elemId2Spinner[uniqueId];
       if (spinnerOverlayElement) {
         $animate.leave(spinnerOverlayElement, targetElement);
+        delete _elemId2Spinner[uniqueId];
       }
     }
 
@@ -51,7 +64,7 @@
      * @param {Object} httpParams params to pass to the $http service
      * @param {Object} form The form from angular schema form to put the "httpPending" flag on during the http call
      * @param {Object} overlayConfig {spinnerSize: 'sm|md|lg', element: jQlite}
-     * @return {Object} a form field defintion
+     * @return {Promise}
      */
     function httpWithSpinner(httpParams, form, overlayConfig) {
       return $q(function(resolve, reject) {
@@ -77,11 +90,11 @@
               form.httpPending = false;
             }
             if (_isValidOverlayConfig(overlayConfig)) {
-              removeSpinnerOverlay(overlayConfig.spinnerSize, overlayConfig.element);
+              removeSpinnerOverlay(overlayConfig.element);
             }
-          }, 500);
+          }, DELAY_TO_REMOVE);
         }
-      }) 
+      })
     }
 
     function _isValidOverlayConfig(overlayConfig) {
@@ -103,7 +116,7 @@
             break;
         }
       }
-      return spinnerOverlayElement;
+      return spinnerOverlayElement !== null ? angular.copy(spinnerOverlayElement) : null;
     }
 
   }
