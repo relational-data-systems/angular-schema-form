@@ -3378,9 +3378,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
  */
 angular.module('schemaForm').directive('sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService',
+        'sfPath','sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService', '$sce',
         function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService, $sce) {
 
             return {
                 restrict: 'AE',
@@ -3502,6 +3502,10 @@ angular.module('schemaForm').directive('sfField',
                             var scope = this;
                             return sfModelValue.getModelPath(scope);
                         };
+
+                        scope.trustAsHtml = function(str) {
+                          return $sce.trustAsHtml(str);
+                        }
 
                         scope.encodeURIComponent = function(uriComponent) {
                             if (uriComponent !== undefined && uriComponent !== null && uriComponent !== "") {
