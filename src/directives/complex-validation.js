@@ -14,17 +14,6 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
             link: function ($scope, $element, $attr, ngModel, $transclude) {
                 var block, childScope, previousElements;
 
-                if ($scope.form.complexValidationMessage) {
-                    if (!$scope.form.validationMessage) {
-                        $scope.form.validationMessage = {};
-                    } else if (typeof $scope.form.validationMessage === "string") {
-                        var defaultValidationMessage = $scope.form.validationMessage;
-                        $scope.form.validationMessage = {};
-                        $scope.form.validationMessage["202"] = defaultValidationMessage;
-                    }
-                    $scope.form.validationMessage['complexValidation'] = $scope.form.complexValidationMessage;
-                }
-
                 $scope.$watch($attr.complexValidation, function watchAction(value) {
 
                     if (value) {
