@@ -1805,46 +1805,88 @@ angular.module('schemaForm').provider('schemaForm',
     }
 
     function getModelPath(scope) {
-      if (!scope.form || !scope.form.key || !scope.model) {
+      var modelPath;
+
+      if (!scope.form || !scope.model) {
         return null;
       }
       _assertValidateSfScope(scope);
       var arrayIndices = _getArrayIndicesByScopeHierarchy(scope);
-      var modelPath = angular.copy(scope.form.key);
+      if (scope.form.key) {
+        modelPath = angular.copy(scope.form.key);
+        _updateModelPathWithArrayIndices(modelPath, arrayIndices);
+        return modelPath;
+      } else {
+        if (arrayIndices.length > 0) { // This means that we are inside an array
+          var parentArrayComponentKey = _findParentArrayComponentKey(scope);
+          if (!parentArrayComponentKey) {
+            $log.error("sfModelValue#getModelPath - failed to find an array that contains this component: ", form);
+            return null;
+          }
+          modelPath = angular.copy(parentArrayComponentKey);
+          modelPath.push("");
+          _updateModelPathWithArrayIndices(modelPath, arrayIndices);
+          return modelPath;
+        } else {
+          return null;
+        }
+      }
+    }
+
+    function _findParentArrayComponentKey(scope) {
+      var result = null;
+      var currentScope;
+      while ((currentScope = scope.$parent) != null) {
+        var form = currentScope.form;
+        if (form && form.schema && form.schema.type === 'array') {
+          result = form.key;
+          break;
+        }
+      }
+      return result;
+    }
+
+    function _updateModelPathWithArrayIndices(modelPath, arrayIndices) {
       for (var i = modelPath.length - 1; i >= 0; i--) {
         if (modelPath[i] === '') {
           if (arrayIndices.length > 0) {
             var scopeArrayIndex = arrayIndices.splice(-1, 1)[0];
             modelPath[i] = scopeArrayIndex;
           } else {
-            $log.error("sfModelValue#getModelPath - Cannot find any more array index for the model path", arrayIndices, modelPath);
+            $log.error("sfModelValue#_updateModelPathWithArrayIndices - Cannot find any more array index for the model path", arrayIndices, modelPath);
           }
-        } 
+        }
       }
       if (arrayIndices.length !== 0) {
-        $log.error("sfModelValue#getModelPath - array indices found along the scope hierarcy does not match to model path", arrayIndices, modelPath);
+        $log.error("sfModelValue#_updateModelPathWithArrayIndices - array indices found along the scope hierarcy does not match to model path", arrayIndices, modelPath);
       }
-      return modelPath;
     }
 
-    function interpArrayIndex(scope, str) {
+    function interpArrayIndex(scope, /*"array[].item" or ["array", "", "item"]*/ strOrArray) {
       _assertValidateSfScope(scope);
       var arrayIndices = _getArrayIndicesByScopeHierarchy(scope);
-      var regex = /(\[\])+/g;
-      var matched;
-      while ((matched = regex.exec(str)) !== null) {
-          var replaceCount = matched[0].length / 2;
-          for (var i = 0; i < replaceCount; i++) {
-              if (i < arrayIndices.length) {
-                  str = str.replace(/\[\]/, "[" + arrayIndices[i] + "]");
-              } else {
-                  $log.error("sfModelValue#interpArrayIndex - Cannot find any more array index for the current match", arrayIndices, matched);
-              }
-          }
+      if (angular.isString(strOrArray)) {
+        var str = strOrArray;
+        var regex = /(\[\])+/g;
+        var matched;
+        while ((matched = regex.exec(str)) !== null) {
+            var replaceCount = matched[0].length / 2;
+            for (var i = 0; i < replaceCount; i++) {
+                if (i < arrayIndices.length) {
+                    str = str.replace(/\[\]/, "[" + arrayIndices[i] + "]");
+                } else {
+                    $log.error("sfModelValue#interpArrayIndex - Cannot find any more array index for the current match", arrayIndices, matched);
+                }
+            }
+        }
+        return str;
+      } else if (angular.isArray(strOrArray)) {
+        var arr = angular.copy(strOrArray);
+        _updateModelPathWithArrayIndices(arr, arrayIndices);
+        return arr;
       }
-      return str;
-    }
 
+    }
 
     function _isScope(candidate) {
       return candidate instanceof $rootScope.constructor;
