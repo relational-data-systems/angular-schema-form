@@ -107,24 +107,31 @@
       }
     }
 
-    function interpArrayIndex(scope, str) {
+    function interpArrayIndex(scope, /*"array[].item" or ["array", "", "item"]*/ strOrArray) {
       _assertValidateSfScope(scope);
       var arrayIndices = _getArrayIndicesByScopeHierarchy(scope);
-      var regex = /(\[\])+/g;
-      var matched;
-      while ((matched = regex.exec(str)) !== null) {
-          var replaceCount = matched[0].length / 2;
-          for (var i = 0; i < replaceCount; i++) {
-              if (i < arrayIndices.length) {
-                  str = str.replace(/\[\]/, "[" + arrayIndices[i] + "]");
-              } else {
-                  $log.error("sfModelValue#interpArrayIndex - Cannot find any more array index for the current match", arrayIndices, matched);
-              }
-          }
+      if (angular.isString(strOrArray)) {
+        var str = strOrArray;
+        var regex = /(\[\])+/g;
+        var matched;
+        while ((matched = regex.exec(str)) !== null) {
+            var replaceCount = matched[0].length / 2;
+            for (var i = 0; i < replaceCount; i++) {
+                if (i < arrayIndices.length) {
+                    str = str.replace(/\[\]/, "[" + arrayIndices[i] + "]");
+                } else {
+                    $log.error("sfModelValue#interpArrayIndex - Cannot find any more array index for the current match", arrayIndices, matched);
+                }
+            }
+        }
+        return str;
+      } else if (angular.isArray(strOrArray)) {
+        var arr = angular.copy(strOrArray);
+        _updateModelPathWithArrayIndices(arr, arrayIndices);
+        return arr;
       }
-      return str;
-    }
 
+    }
 
     function _isScope(candidate) {
       return candidate instanceof $rootScope.constructor;
