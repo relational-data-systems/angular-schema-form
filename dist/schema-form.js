@@ -1198,8 +1198,13 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
     function addSpinnerOverlay(spinnerSize, targetElement) {
       var spinnerOverlayElement = _getSpinnerOverlayElement(spinnerSize);
       if (spinnerOverlayElement) {
-        _elemId2Spinner[_getUniqueId(targetElement)] = spinnerOverlayElement;
-        $animate.enter(spinnerOverlayElement, targetElement);
+        var elementId = _getUniqueId(targetElement);
+        if (!_elemId2Spinner[elementId]) {
+          // Add this if judgement in case of multiple http calls bring in more than
+          // one spinning overlays.
+          _elemId2Spinner[elementId] = spinnerOverlayElement;
+          $animate.enter(spinnerOverlayElement, targetElement);
+        }
       }
     }
 
