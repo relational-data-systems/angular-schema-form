@@ -453,6 +453,13 @@ angular.module('schemaForm').provider('schemaForm',
           var arrPath = path.slice(); arrPath.push('');
           traverse(schema.items, fn, arrPath);
         }
+
+        // Support KeyContainers (when not an array) - may have unintended side effects
+        if (ignoreArrays && schema.type != "array" && schema.items) {
+            var arrPath = path.slice();
+            traverse(schema.items, fn, arrPath);
+        }
+
       };
 
       traverse(schema, fn, path || []);
