@@ -160,7 +160,11 @@
       var currentScope = scope;
       while (currentScope) {
         var index = null;
-        if (currentScope.hasOwnProperty('$index')) {
+        // Add an extra override to first check for $gridIndex. Support required for data grid
+        if (currentScope.hasOwnProperty('$gridRowIndex')) {
+          index = currentScope.$gridIndex;
+        }
+        else if (currentScope.hasOwnProperty('$index')) {
             index = currentScope.$index;
         }
         if (angular.isNumber(index)) {
