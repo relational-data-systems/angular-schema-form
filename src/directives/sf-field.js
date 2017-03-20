@@ -24,7 +24,7 @@ angular.module('schemaForm').directive('sfField',
                         });
 
                         // Fetch our form.
-                        scope.form = sfSchema.lookup['f' + attrs.sfField];
+                        scope.form = sfSchema.lookup['f' + attrs.sfField] ? sfSchema.lookup['f' + attrs.sfField] : scope.form;
                     },
                     post: function(scope, element, attrs, sfSchema) {
                         //Keep error prone logic from the template
