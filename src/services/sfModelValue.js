@@ -162,7 +162,7 @@
         var index = null;
         // Add an extra override to first check for $gridIndex. Support required for data grid
         if (currentScope.hasOwnProperty('$gridRowIndex')) {
-          index = currentScope.$gridIndex;
+          index = currentScope.$gridRowIndex;
         }
         else if (currentScope.hasOwnProperty('$index')) {
             index = currentScope.$index;
