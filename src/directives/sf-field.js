@@ -208,9 +208,9 @@ angular.module('schemaForm').directive('sfField',
                                 function(event, error, validationMessage, validity) {
 
                                     // If ComplexValidation passed, we don't need to do anything.
-                                    if("complexValidation" === error
+                                    if("jsExpression" === error
                                       &&validationMessage===true
-                                      &&!scope.ngModel.$error.complexValidation) {
+                                      &&!scope.ngModel.$error.jsExpression) {
                                         return;
                                     }
 

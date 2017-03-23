@@ -49,7 +49,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           Object.keys(ngModel.$error)
               .filter(function(k) { return k.indexOf('tv4-') === 0; })
               .forEach(function(k) { ngModel.$setValidity(k, true); });
-          ngModel.$setValidity('complexValidation' , true);
+          ngModel.$setValidity('jsExpression' , true);
           ngModel.$setValidity('remoteValidation' , true);
 
           if (!result.valid) {
@@ -67,9 +67,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
-            if(form.complexValidationResult===false) {
-              ngModel.$setValidity('complexValidation' , false);
-              error = {'code':'complexValidation'};
+            if(form.jsExpressionResult===false) {
+              ngModel.$setValidity('jsExpression' , false);
+              error = {'code':'jsExpression'};
               return viewValue;
             }else if(form.remoteValidationResult===false) {
               ngModel.$setValidity('remoteValidation' , false);
@@ -114,7 +114,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'complexValidation' && e !== 'remoteValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'jsExpression' && e !== 'remoteValidation';});
           };
         }
 
@@ -154,14 +154,14 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 			ngModel.$setValidity('tv4-302', true); //hotfix for not reset required validation
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
-            } else if (form.complexValidationResult === false ) {
-              ngModel.$setValidity('complexValidation', false);
-            } else if(form.complexValidationResult){
-              ngModel.$setValidity('complexValidation', true);
+            } else if (form.jsExpressionResult === false ) {
+              ngModel.$setValidity('jsExpression', false);
+            } else if(form.jsExpressionResult){
+              ngModel.$setValidity('jsExpression', true);
             } else if(form.remoteValidationResult === false){
               ngModel.$setValidity('remoteValidation', false);
             } else if(form.remoteValidationResult){
-              ngModel.$setValidity('complexValidation', true);
+              ngModel.$setValidity('jsExpression', true);
             }
 
           } else {
