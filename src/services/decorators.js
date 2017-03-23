@@ -222,15 +222,15 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                                 });
                               }
 
-                              if (form.complexValidation) {
-                                var evalExpr = 'evalExpr(form.complexValidation,{ model: model, "arrayIndex": arrayIndex})';
+                              if (form.schema.jsExpression) {
+                                var evalExpr = 'evalExpr(form.schema.jsExpression,{ model: model, "arrayIndex": arrayIndex})';
                                 if (form.key) {
-                                  evalExpr = 'evalExpr(form.complexValidation,{ model: model, "arrayIndex": arrayIndex, "modelValue": model' + sfPath.stringify(form.key) + '})';
+                                  evalExpr = 'evalExpr(form.schema.jsExpression,{ model: model, "arrayIndex": arrayIndex, "modelValue": model' + sfPath.stringify(form.key) + '})';
                                 }
 
                                 angular.forEach(element.children(), function(child) {
                                   child.setAttribute(
-                                      'complex-validation',
+                                      'js-expression',
                                       evalExpr
                                   );
                                 });
@@ -247,7 +247,7 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                                   function(event, error, validationMessage, validity, formName) {
                                     // validationMessage and validity are mutually exclusive
                                     formName = validity;
-                                    if("complexValidation" === error&&validationMessage===true&&!scope.ngModel.$error.complexValidation) {
+                                    if("jsExpression" === error&&validationMessage===true&&!scope.ngModel.$error.jsExpression) {
                                       return;
                                     }
                                     if (validationMessage === true || validationMessage === false) {

@@ -245,15 +245,15 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
       }
 
     },
-    complexValidation: function(args) {
-      // Do we have a condition? Then we slap on an ng-if on all children,
+    jsExpression: function(args) {
+      // Do we have a condition? Then we slap on an ng-if on all children
       // but be nice to existing ng-if.
-      if (args.form.complexValidation) {
+      if (args.form.schema && args.form.schema.jsExpression) {
         var evalExpr = 'evalExpr(' + args.path +
-            '.complexValidation, { model: model, "arrayIndex": $index})';
+            '.jsExpression, { model: model, "arrayIndex": $index})';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
-          evalExpr = 'evalExpr(' + args.path + '.complexValidation,{ model: model, "arrayIndex": $index, ' +
+          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression,{ model: model, "arrayIndex": $index, ' +
               '"modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
@@ -261,7 +261,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         for (var i = 0; i < children.length; i++) {
           var child = children[i];
           child.setAttribute(
-              'complex-validation',
+              'js-expression',
               evalExpr
           );
         }
@@ -617,15 +617,15 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                                 });
                               }
 
-                              if (form.complexValidation) {
-                                var evalExpr = 'evalExpr(form.complexValidation,{ model: model, "arrayIndex": arrayIndex})';
+                              if (form.schema.jsExpression) {
+                                var evalExpr = 'evalExpr(form.schema.jsExpression,{ model: model, "arrayIndex": arrayIndex})';
                                 if (form.key) {
-                                  evalExpr = 'evalExpr(form.complexValidation,{ model: model, "arrayIndex": arrayIndex, "modelValue": model' + sfPath.stringify(form.key) + '})';
+                                  evalExpr = 'evalExpr(form.schema.jsExpression,{ model: model, "arrayIndex": arrayIndex, "modelValue": model' + sfPath.stringify(form.key) + '})';
                                 }
 
                                 angular.forEach(element.children(), function(child) {
                                   child.setAttribute(
-                                      'complex-validation',
+                                      'js-expression',
                                       evalExpr
                                   );
                                 });
@@ -642,7 +642,7 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                                   function(event, error, validationMessage, validity, formName) {
                                     // validationMessage and validity are mutually exclusive
                                     formName = validity;
-                                    if("complexValidation" === error&&validationMessage===true&&!scope.ngModel.$error.complexValidation) {
+                                    if("jsExpression" === error&&validationMessage===true&&!scope.ngModel.$error.jsExpression) {
                                       return;
                                     }
                                     if (validationMessage === true || validationMessage === false) {
@@ -2352,7 +2352,7 @@ angular.module('schemaForm').directive('sfChanged', function() {
 /**
  * Created by Luke on 31/08/2016.
  */
-angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$parse', 'sfSelect',
+angular.module('schemaForm').directive('jsExpression', ['sfValidator', '$parse', 'sfSelect',
     function (sfValidator, $parse, sfSelect) {
 
         return {
@@ -2365,35 +2365,46 @@ angular.module('schemaForm').directive('complexValidation', ['sfValidator', '$pa
             link: function ($scope, $element, $attr, ngModel, $transclude) {
                 var block, childScope, previousElements;
 
-                if ($scope.form.complexValidationMessage) {
-                    if (!$scope.form.validationMessage) {
-                        $scope.form.validationMessage = {};
-                    } else if (typeof $scope.form.validationMessage === "string") {
-                        var defaultValidationMessage = $scope.form.validationMessage;
-                        $scope.form.validationMessage = {};
-                        $scope.form.validationMessage["202"] = defaultValidationMessage;
+                var form = $scope.form;
+                var schema = form.schema;
+
+                // New version
+                // jsExpression: string
+                // errorMessage: {
+                //     jsExpression: string
+                // }
+
+                if (schema.jsExpression) {
+                    if (schema.errorMessage && schema.errorMessage.jsExpression) {
+                        if (!form.validationMessage) {
+                            form.validationMessage = {};
+                        } else if (typeof form.validationMessage === "string") {
+                            var defaultValidationMessage = form.validationMessage;
+                            $scope.form.validationMessage = {};
+                            $scope.form.validationMessage["202"] = defaultValidationMessage;
+                        }
+                        form.validationMessage['jsExpression'] = schema.errorMessage.jsExpression;
                     }
-                    $scope.form.validationMessage['complexValidation'] = $scope.form.complexValidationMessage;
                 }
 
-                $scope.$watch($attr.complexValidation, function watchAction(value) {
+                $scope.$watch($attr.jsExpression, function watchAction(value) {
 
                     if (value) {
                         //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
-                        $scope.form.complexValidationResult = true;
+                        $scope.form.jsExpressionResult = true;
                         if ($scope.ngModel.$$parentForm.$dirty)
-                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'complexValidation', true);
+                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', true);
                     } else {
                         //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
-                        $scope.form.complexValidationResult = false;
+                        $scope.form.jsExpressionResult = false;
 
                         //FIXME, check till root form
-                        var isFormDirty = $scope.ngModel.$$parentForm.$dirty
+                        var isFormDirty = $scope.ngModel.$$parentForm.$dirty;
                         if (!isFormDirty && $scope.ngModel.$$parentForm.$$parentForm)
                             isFormDirty = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
 
                         if (isFormDirty)
-                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'complexValidation');
+                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression');
                     }
                 });
             }
@@ -3281,7 +3292,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           Object.keys(ngModel.$error)
               .filter(function(k) { return k.indexOf('tv4-') === 0; })
               .forEach(function(k) { ngModel.$setValidity(k, true); });
-          ngModel.$setValidity('complexValidation' , true);
+          ngModel.$setValidity('jsExpression' , true);
           ngModel.$setValidity('remoteValidation' , true);
 
           if (!result.valid) {
@@ -3299,9 +3310,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
-            if(form.complexValidationResult===false) {
-              ngModel.$setValidity('complexValidation' , false);
-              error = {'code':'complexValidation'};
+            if(form.jsExpressionResult===false) {
+              ngModel.$setValidity('jsExpression' , false);
+              error = {'code':'jsExpression'};
               return viewValue;
             }else if(form.remoteValidationResult===false) {
               ngModel.$setValidity('remoteValidation' , false);
@@ -3346,7 +3357,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'complexValidation' && e !== 'remoteValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'jsExpression' && e !== 'remoteValidation';});
           };
         }
 
@@ -3386,14 +3397,14 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 			ngModel.$setValidity('tv4-302', true); //hotfix for not reset required validation
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
-            } else if (form.complexValidationResult === false ) {
-              ngModel.$setValidity('complexValidation', false);
-            } else if(form.complexValidationResult){
-              ngModel.$setValidity('complexValidation', true);
+            } else if (form.jsExpressionResult === false ) {
+              ngModel.$setValidity('jsExpression', false);
+            } else if(form.jsExpressionResult){
+              ngModel.$setValidity('jsExpression', true);
             } else if(form.remoteValidationResult === false){
               ngModel.$setValidity('remoteValidation', false);
             } else if(form.remoteValidationResult){
-              ngModel.$setValidity('complexValidation', true);
+              ngModel.$setValidity('jsExpression', true);
             }
 
           } else {
@@ -3641,9 +3652,9 @@ angular.module('schemaForm').directive('sfField',
                                 function(event, error, validationMessage, validity) {
 
                                     // If ComplexValidation passed, we don't need to do anything.
-                                    if("complexValidation" === error
+                                    if("jsExpression" === error
                                       &&validationMessage===true
-                                      &&!scope.ngModel.$error.complexValidation) {
+                                      &&!scope.ngModel.$error.jsExpression) {
                                         return;
                                     }
 
