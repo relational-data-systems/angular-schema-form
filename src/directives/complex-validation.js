@@ -1,6 +1,7 @@
+
 /**
- * Created by Luke on 31/08/2016.
- */
+* Created by Luke on 31/08/2016.
+*/
 angular.module('schemaForm').directive('jsExpression', [function() {
 
         return {
@@ -14,10 +15,11 @@ angular.module('schemaForm').directive('jsExpression', [function() {
                 var form = $scope.form;
                 var schema = form.schema;
 
-                $scope.$watch($attr.jsExpression, function(isValid) {
-                    $scope.form.jsExpressionResult = isValid;
+                $scope.$watch($attr.jsExpression, function(value) {
+                    var validity = !!value; // Just need true or false
+                    $scope.form.jsExpressionResult = validity;
                     if (isFormDirty()) {
-                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', isValid);
+                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', null, validity);
                     }
                 });
 
@@ -27,6 +29,7 @@ angular.module('schemaForm').directive('jsExpression', [function() {
                     if (!result && $scope.ngModel.$$parentForm.$$parentForm) {
                         result = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
                     }
+                    return result;
                 }
             }
         };

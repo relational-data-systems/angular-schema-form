@@ -322,11 +322,12 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
     },
     jsExpression: function(args) {
       if (args.form.schema && args.form.schema.jsExpression) {
-        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { model: model, "arrayIndex": $index})';
+        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index})';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
-          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { model: model, "arrayIndex": $index, ' +
-              '"modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
+          // kelin: try to make the "evalExpr" work in array. (Only for one level of array). Array inside another array is still not supported.
+          strKey = strKey.replace(/\[''\]/g, "[$index]");
+          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
@@ -2344,9 +2345,10 @@ angular.module('schemaForm').directive('sfChanged', function() {
   };
 });
 
+
 /**
- * Created by Luke on 31/08/2016.
- */
+* Created by Luke on 31/08/2016.
+*/
 angular.module('schemaForm').directive('jsExpression', [function() {
 
         return {
@@ -2360,10 +2362,11 @@ angular.module('schemaForm').directive('jsExpression', [function() {
                 var form = $scope.form;
                 var schema = form.schema;
 
-                $scope.$watch($attr.jsExpression, function(isValid) {
-                    $scope.form.jsExpressionResult = isValid;
+                $scope.$watch($attr.jsExpression, function(value) {
+                    var validity = !!value; // Just need true or false
+                    $scope.form.jsExpressionResult = validity;
                     if (isFormDirty()) {
-                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', isValid);
+                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', null, validity);
                     }
                 });
 
@@ -2373,11 +2376,11 @@ angular.module('schemaForm').directive('jsExpression', [function() {
                     if (!result && $scope.ngModel.$$parentForm.$$parentForm) {
                         result = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
                     }
+                    return result;
                 }
             }
         };
     }]);
-
 /**
  * Default angular-schema-form directive, not currently used
  * TODO: confirm this is the case, as this directive does not handle complexValidation events.
@@ -3248,12 +3251,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             return viewValue;
           }
 
-          var result ={'valid':true}
-          //skip validation against schema for uiselectmultiple since the viewValue from it is not the modelValue.
-          if(form.type!=='uiselectmultiple') 	 {
-            var result =  sfValidator.validate(form, viewValue);
-          }
-          //console.log('result is', result)
+          var result = {'valid': true}
           // Since we might have different tv4 errors we must clear all
           // errors that start with tv4-
           Object.keys(ngModel.$error)
@@ -3277,13 +3275,13 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
-            if(form.jsExpressionResult===false) {
-              ngModel.$setValidity('jsExpression' , false);
-              error = {'code':'jsExpression'};
+            if (form.jsExpressionResult === false) {
+              ngModel.$setValidity('jsExpression', false);
+              error = {'code': 'jsExpression'};
               return viewValue;
-            }else if(form.remoteValidationResult===false) {
-              ngModel.$setValidity('remoteValidation' , false);
-              error = {'code':'remoteValidation'};
+            } else if (form.remoteValidationResult === false) {
+              ngModel.$setValidity('remoteValidation', false);
+              error = {'code': 'remoteValidation'};
               return viewValue;
             } else {
               return viewValue;
@@ -3324,7 +3322,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'jsExpression' && e !== 'remoteValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation';});
           };
         }
 
@@ -3360,8 +3358,8 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
-            // FIXME: i think this should handle more than one case at a time if we wan't multiple messages displayed per field?
-			ngModel.$setValidity('tv4-302', true); //hotfix for not reset required validation
+            // FIXME: i think this should handle more than one case at a time if we want multiple messages displayed per field?
+            ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
             } else if (form.jsExpressionResult === false ) {
@@ -3371,7 +3369,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             } else if(form.remoteValidationResult === false){
               ngModel.$setValidity('remoteValidation', false);
             } else if(form.remoteValidationResult){
-              ngModel.$setValidity('jsExpression', true);
+              ngModel.$setValidity('remoteValidation', true);
             }
 
           } else {
@@ -3618,23 +3616,18 @@ angular.module('schemaForm').directive('sfField',
                                 'schemaForm.error.' + form.key.join('.'),
                                 function(event, error, validationMessage, validity) {
 
-                                    // If ComplexValidation passed, we don't need to do anything.
-                                    if("jsExpression" === error
-                                      &&validationMessage===true
-                                      &&!scope.ngModel.$error.jsExpression) {
-                                        return;
+                                    // If jsExpression passed, we don't need to do anything.
+                                    if ("jsExpression" === error
+                                      && validity === true
+                                      && !scope.ngModel.$error.jsExpression) {
+                                      return;
                                     }
 
                                     // If RemoteValidation passed, we don't need to do anything.
                                     if("remoteValidation" === error
-                                      &&validationMessage===true
-                                      &&!scope.ngModel.$error.remoteValidation) {
-                                        return;
-                                    }
-
-                                    if (validationMessage === true || validationMessage === false) {
-                                        validity = validationMessage;
-                                        validationMessage = undefined;
+                                      && validity === true
+                                      && !scope.ngModel.$error.remoteValidation) {
+                                      return;
                                     }
 
                                     if (scope.ngModel && error) {
@@ -3667,7 +3660,7 @@ angular.module('schemaForm').directive('sfField',
 
                                             // Setting or removing a validity can change the field to believe its valid
                                             // but its not. So lets trigger its validation as well.
-                                            scope.$broadcast('schemaFormValidate');
+                                            scope.$broadcast('schemaFormValidate'); // kelin: this is just for the field itself.
                                         }
                                     }
                                 }

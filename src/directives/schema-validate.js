@@ -38,12 +38,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             return viewValue;
           }
 
-          var result ={'valid':true}
-          //skip validation against schema for uiselectmultiple since the viewValue from it is not the modelValue.
-          if(form.type!=='uiselectmultiple') 	 {
-            var result =  sfValidator.validate(form, viewValue);
-          }
-          //console.log('result is', result)
+          var result = {'valid': true}
           // Since we might have different tv4 errors we must clear all
           // errors that start with tv4-
           Object.keys(ngModel.$error)
@@ -67,13 +62,13 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
-            if(form.jsExpressionResult===false) {
-              ngModel.$setValidity('jsExpression' , false);
-              error = {'code':'jsExpression'};
+            if (form.jsExpressionResult === false) {
+              ngModel.$setValidity('jsExpression', false);
+              error = {'code': 'jsExpression'};
               return viewValue;
-            }else if(form.remoteValidationResult===false) {
-              ngModel.$setValidity('remoteValidation' , false);
-              error = {'code':'remoteValidation'};
+            } else if (form.remoteValidationResult === false) {
+              ngModel.$setValidity('remoteValidation', false);
+              error = {'code': 'remoteValidation'};
               return viewValue;
             } else {
               return viewValue;
@@ -114,7 +109,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'jsExpression' && e !== 'remoteValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation';});
           };
         }
 
@@ -150,8 +145,8 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
-            // FIXME: i think this should handle more than one case at a time if we wan't multiple messages displayed per field?
-			ngModel.$setValidity('tv4-302', true); //hotfix for not reset required validation
+            // FIXME: i think this should handle more than one case at a time if we want multiple messages displayed per field?
+            ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
             } else if (form.jsExpressionResult === false ) {
@@ -161,7 +156,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             } else if(form.remoteValidationResult === false){
               ngModel.$setValidity('remoteValidation', false);
             } else if(form.remoteValidationResult){
-              ngModel.$setValidity('jsExpression', true);
+              ngModel.$setValidity('remoteValidation', true);
             }
 
           } else {
