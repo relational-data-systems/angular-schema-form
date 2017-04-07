@@ -19,7 +19,7 @@ angular.module('schemaForm').directive('jsExpression', [function() {
                     var validity = !!value; // Just need true or false
                     $scope.form.jsExpressionResult = validity;
                     if (isFormDirty()) {
-                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', null, validity);
+                        $scope.$broadcast('schemaForm.error.' + $scope.getModelPath().join('.'), 'jsExpression', null, validity);
                     }
                 });
 

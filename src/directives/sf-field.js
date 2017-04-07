@@ -204,7 +204,7 @@ angular.module('schemaForm').directive('sfField',
                         if (form.key) {
                             // It looks better with dot notation.
                             scope.$on(
-                                'schemaForm.error.' + form.key.join('.'),
+                                'schemaForm.error.' + scope.getModelPath().join('.'),
                                 function(event, error, validationMessage, validity) {
 
                                     // If jsExpression passed, we don't need to do anything.

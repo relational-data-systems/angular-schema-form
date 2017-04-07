@@ -2366,7 +2366,7 @@ angular.module('schemaForm').directive('jsExpression', [function() {
                     var validity = !!value; // Just need true or false
                     $scope.form.jsExpressionResult = validity;
                     if (isFormDirty()) {
-                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', null, validity);
+                        $scope.$broadcast('schemaForm.error.' + $scope.getModelPath().join('.'), 'jsExpression', null, validity);
                     }
                 });
 
@@ -3613,7 +3613,7 @@ angular.module('schemaForm').directive('sfField',
                         if (form.key) {
                             // It looks better with dot notation.
                             scope.$on(
-                                'schemaForm.error.' + form.key.join('.'),
+                                'schemaForm.error.' + scope.getModelPath().join('.'),
                                 function(event, error, validationMessage, validity) {
 
                                     // If jsExpression passed, we don't need to do anything.
