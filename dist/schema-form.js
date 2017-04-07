@@ -65,6 +65,81 @@ angular.module('schemaForm').provider('sfPath',
   };
 }]);
 
+/**
+ * @ngdoc service
+ * @name sfSelect
+ * @kind function
+ *
+ */
+angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
+  var numRe = /^\d+$/;
+
+  /**
+    * @description
+    * Utility method to access deep properties without
+    * throwing errors when things are not defined.
+    * Can also set a value in a deep structure, creating objects when missing
+    * ex.
+    * var foo = Select('address.contact.name',obj)
+    * Select('address.contact.name',obj,'Leeroy')
+    *
+    * @param {string} projection A dot path to the property you want to get/set
+    * @param {object} obj   (optional) The object to project on, defaults to 'this'
+    * @param {Any}    valueToSet (opional)  The value to set, if parts of the path of
+    *                 the projection is missing empty objects will be created.
+    * @returns {Any|undefined} returns the value at the end of the projection path
+    *                          or undefined if there is none.
+    */
+  return function(projection, obj, valueToSet) {
+    if (!obj) {
+      obj = this;
+    }
+    //Support [] array syntax
+    var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
+
+    if (typeof valueToSet !== 'undefined' && parts.length === 1) {
+      //special case, just setting one variable
+      obj[parts[0]] = valueToSet;
+      return obj;
+    }
+
+    if (typeof valueToSet !== 'undefined' &&
+        typeof obj[parts[0]] === 'undefined') {
+       // We need to look ahead to check if array is appropriate
+      obj[parts[0]] = parts.length > 2 && numRe.test(parts[1]) ? [] : {};
+    }
+
+    var value = obj[parts[0]];
+    for (var i = 1; i < parts.length; i++) {
+      // Special case: We allow JSON Form syntax for arrays using empty brackets
+      // These will of course not work here so we exit if they are found.
+      if (parts[i] === '') {
+        return undefined;
+      }
+      if (typeof valueToSet !== 'undefined') {
+        if (i === parts.length - 1) {
+          //last step. Let's set the value
+          value[parts[i]] = valueToSet;
+          return valueToSet;
+        } else {
+          // Make sure to create new objects on the way if they are not there.
+          // We need to look ahead to check if array is appropriate
+          var tmp = value[parts[i]];
+          if (typeof tmp === 'undefined' || tmp === null) {
+            tmp = numRe.test(parts[i + 1]) ? [] : {};
+            value[parts[i]] = tmp;
+          }
+          value = tmp;
+        }
+      } else if (value) {
+        //Just get nex value.
+        value = value[parts[i]];
+      }
+    }
+    return value;
+  };
+}]);
+
 
 // FIXME: type template (using custom builder)
 angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(sfPathProvider) {
@@ -246,24 +321,18 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
 
     },
     jsExpression: function(args) {
-      // Do we have a condition? Then we slap on an ng-if on all children
-      // but be nice to existing ng-if.
       if (args.form.schema && args.form.schema.jsExpression) {
-        var evalExpr = 'evalExpr(' + args.path +
-            '.jsExpression, { model: model, "arrayIndex": $index})';
+        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { model: model, "arrayIndex": $index})';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
-          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression,{ model: model, "arrayIndex": $index, ' +
+          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { model: model, "arrayIndex": $index, ' +
               '"modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
         for (var i = 0; i < children.length; i++) {
           var child = children[i];
-          child.setAttribute(
-              'js-expression',
-              evalExpr
-          );
+          child.setAttribute('js-expression', evalExpr);
         }
       }
     }
@@ -274,7 +343,8 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
     builders.sfField,
     builders.ngModel,
     builders.ngModelOptions,
-    builders.condition
+    builders.condition,
+    builders.jsExpression
   ];
   this.stdBuilders = stdBuilders;
 
@@ -1690,81 +1760,6 @@ angular.module('schemaForm').provider('schemaForm',
 
 }]);
 
-/**
- * @ngdoc service
- * @name sfSelect
- * @kind function
- *
- */
-angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
-  var numRe = /^\d+$/;
-
-  /**
-    * @description
-    * Utility method to access deep properties without
-    * throwing errors when things are not defined.
-    * Can also set a value in a deep structure, creating objects when missing
-    * ex.
-    * var foo = Select('address.contact.name',obj)
-    * Select('address.contact.name',obj,'Leeroy')
-    *
-    * @param {string} projection A dot path to the property you want to get/set
-    * @param {object} obj   (optional) The object to project on, defaults to 'this'
-    * @param {Any}    valueToSet (opional)  The value to set, if parts of the path of
-    *                 the projection is missing empty objects will be created.
-    * @returns {Any|undefined} returns the value at the end of the projection path
-    *                          or undefined if there is none.
-    */
-  return function(projection, obj, valueToSet) {
-    if (!obj) {
-      obj = this;
-    }
-    //Support [] array syntax
-    var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
-
-    if (typeof valueToSet !== 'undefined' && parts.length === 1) {
-      //special case, just setting one variable
-      obj[parts[0]] = valueToSet;
-      return obj;
-    }
-
-    if (typeof valueToSet !== 'undefined' &&
-        typeof obj[parts[0]] === 'undefined') {
-       // We need to look ahead to check if array is appropriate
-      obj[parts[0]] = parts.length > 2 && numRe.test(parts[1]) ? [] : {};
-    }
-
-    var value = obj[parts[0]];
-    for (var i = 1; i < parts.length; i++) {
-      // Special case: We allow JSON Form syntax for arrays using empty brackets
-      // These will of course not work here so we exit if they are found.
-      if (parts[i] === '') {
-        return undefined;
-      }
-      if (typeof valueToSet !== 'undefined') {
-        if (i === parts.length - 1) {
-          //last step. Let's set the value
-          value[parts[i]] = valueToSet;
-          return valueToSet;
-        } else {
-          // Make sure to create new objects on the way if they are not there.
-          // We need to look ahead to check if array is appropriate
-          var tmp = value[parts[i]];
-          if (typeof tmp === 'undefined' || tmp === null) {
-            tmp = numRe.test(parts[i + 1]) ? [] : {};
-            value[parts[i]] = tmp;
-          }
-          value = tmp;
-        }
-      } else if (value) {
-        //Just get nex value.
-        value = value[parts[i]];
-      }
-    }
-    return value;
-  };
-}]);
-
 (function() {
   'use strict';
 
@@ -2352,8 +2347,7 @@ angular.module('schemaForm').directive('sfChanged', function() {
 /**
  * Created by Luke on 31/08/2016.
  */
-angular.module('schemaForm').directive('jsExpression', ['sfValidator', '$parse', 'sfSelect',
-    function (sfValidator, $parse, sfSelect) {
+angular.module('schemaForm').directive('jsExpression', [function() {
 
         return {
             restrict: 'A',
@@ -2363,50 +2357,23 @@ angular.module('schemaForm').directive('jsExpression', ['sfValidator', '$parse',
             priority: 500,
             require: '?ngModel',
             link: function ($scope, $element, $attr, ngModel, $transclude) {
-                var block, childScope, previousElements;
-
                 var form = $scope.form;
                 var schema = form.schema;
 
-                // New version
-                // jsExpression: string
-                // errorMessage: {
-                //     jsExpression: string
-                // }
-
-                if (schema.jsExpression) {
-                    if (schema.errorMessage && schema.errorMessage.jsExpression) {
-                        if (!form.validationMessage) {
-                            form.validationMessage = {};
-                        } else if (typeof form.validationMessage === "string") {
-                            var defaultValidationMessage = form.validationMessage;
-                            $scope.form.validationMessage = {};
-                            $scope.form.validationMessage["202"] = defaultValidationMessage;
-                        }
-                        form.validationMessage['jsExpression'] = schema.errorMessage.jsExpression;
-                    }
-                }
-
-                $scope.$watch($attr.jsExpression, function watchAction(value) {
-
-                    if (value) {
-                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
-                        $scope.form.jsExpressionResult = true;
-                        if ($scope.ngModel.$$parentForm.$dirty)
-                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', true);
-                    } else {
-                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
-                        $scope.form.jsExpressionResult = false;
-
-                        //FIXME, check till root form
-                        var isFormDirty = $scope.ngModel.$$parentForm.$dirty;
-                        if (!isFormDirty && $scope.ngModel.$$parentForm.$$parentForm)
-                            isFormDirty = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
-
-                        if (isFormDirty)
-                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression');
+                $scope.$watch($attr.jsExpression, function(isValid) {
+                    $scope.form.jsExpressionResult = isValid;
+                    if (isFormDirty()) {
+                        $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', isValid);
                     }
                 });
+
+                function isFormDirty() {
+                    //FIXME, check till root form
+                    var result = $scope.ngModel.$$parentForm.$dirty;
+                    if (!result && $scope.ngModel.$$parentForm.$$parentForm) {
+                        result = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
+                    }
+                }
             }
         };
     }]);
