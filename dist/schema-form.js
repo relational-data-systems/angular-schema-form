@@ -1073,6 +1073,11 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
   defaultMessages.minlength = defaultMessages[200];
   defaultMessages.pattern   = defaultMessages[202];
 
+  // kelin: Needs these to be compatible with Ajv
+  defaultMessages.maxLength = defaultMessages.maxlength;
+  defaultMessages.minLength = defaultMessages.minlength;
+  defaultMessages.type   = 'Incorrect data type, {{schema.type}} expected';
+
   this.setDefaultMessages = function(messages) {
     defaultMessages = messages;
   };
