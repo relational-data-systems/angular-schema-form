@@ -65,6 +65,81 @@ angular.module('schemaForm').provider('sfPath',
   };
 }]);
 
+/**
+ * @ngdoc service
+ * @name sfSelect
+ * @kind function
+ *
+ */
+angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
+  var numRe = /^\d+$/;
+
+  /**
+    * @description
+    * Utility method to access deep properties without
+    * throwing errors when things are not defined.
+    * Can also set a value in a deep structure, creating objects when missing
+    * ex.
+    * var foo = Select('address.contact.name',obj)
+    * Select('address.contact.name',obj,'Leeroy')
+    *
+    * @param {string} projection A dot path to the property you want to get/set
+    * @param {object} obj   (optional) The object to project on, defaults to 'this'
+    * @param {Any}    valueToSet (opional)  The value to set, if parts of the path of
+    *                 the projection is missing empty objects will be created.
+    * @returns {Any|undefined} returns the value at the end of the projection path
+    *                          or undefined if there is none.
+    */
+  return function(projection, obj, valueToSet) {
+    if (!obj) {
+      obj = this;
+    }
+    //Support [] array syntax
+    var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
+
+    if (typeof valueToSet !== 'undefined' && parts.length === 1) {
+      //special case, just setting one variable
+      obj[parts[0]] = valueToSet;
+      return obj;
+    }
+
+    if (typeof valueToSet !== 'undefined' &&
+        typeof obj[parts[0]] === 'undefined') {
+       // We need to look ahead to check if array is appropriate
+      obj[parts[0]] = parts.length > 2 && numRe.test(parts[1]) ? [] : {};
+    }
+
+    var value = obj[parts[0]];
+    for (var i = 1; i < parts.length; i++) {
+      // Special case: We allow JSON Form syntax for arrays using empty brackets
+      // These will of course not work here so we exit if they are found.
+      if (parts[i] === '') {
+        return undefined;
+      }
+      if (typeof valueToSet !== 'undefined') {
+        if (i === parts.length - 1) {
+          //last step. Let's set the value
+          value[parts[i]] = valueToSet;
+          return valueToSet;
+        } else {
+          // Make sure to create new objects on the way if they are not there.
+          // We need to look ahead to check if array is appropriate
+          var tmp = value[parts[i]];
+          if (typeof tmp === 'undefined' || tmp === null) {
+            tmp = numRe.test(parts[i + 1]) ? [] : {};
+            value[parts[i]] = tmp;
+          }
+          value = tmp;
+        }
+      } else if (value) {
+        //Just get nex value.
+        value = value[parts[i]];
+      }
+    }
+    return value;
+  };
+}]);
+
 
 // FIXME: type template (using custom builder)
 angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(sfPathProvider) {
@@ -246,24 +321,19 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
 
     },
     jsExpression: function(args) {
-      // Do we have a condition? Then we slap on an ng-if on all children
-      // but be nice to existing ng-if.
       if (args.form.schema && args.form.schema.jsExpression) {
-        var evalExpr = 'evalExpr(' + args.path +
-            '.jsExpression, { model: model, "arrayIndex": $index})';
+        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index})';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
-          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression,{ model: model, "arrayIndex": $index, ' +
-              '"modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
+          // kelin: try to make the "evalExpr" work in array. (Only for one level of array). Array inside another array is still not supported.
+          strKey = strKey.replace(/\[''\]/g, "[$index]");
+          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
         for (var i = 0; i < children.length; i++) {
           var child = children[i];
-          child.setAttribute(
-              'js-expression',
-              evalExpr
-          );
+          child.setAttribute('js-expression', evalExpr);
         }
       }
     }
@@ -274,7 +344,8 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
     builders.sfField,
     builders.ngModel,
     builders.ngModelOptions,
-    builders.condition
+    builders.condition,
+    builders.jsExpression
   ];
   this.stdBuilders = stdBuilders;
 
@@ -1002,6 +1073,11 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
   defaultMessages.minlength = defaultMessages[200];
   defaultMessages.pattern   = defaultMessages[202];
 
+  // kelin: Needs these to be compatible with Ajv
+  defaultMessages.maxLength = defaultMessages.maxlength;
+  defaultMessages.minLength = defaultMessages.minlength;
+  defaultMessages.type   = 'Incorrect data type, {{schema.type}} expected';
+
   this.setDefaultMessages = function(messages) {
     defaultMessages = messages;
   };
@@ -1690,81 +1766,6 @@ angular.module('schemaForm').provider('schemaForm',
 
 }]);
 
-/**
- * @ngdoc service
- * @name sfSelect
- * @kind function
- *
- */
-angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
-  var numRe = /^\d+$/;
-
-  /**
-    * @description
-    * Utility method to access deep properties without
-    * throwing errors when things are not defined.
-    * Can also set a value in a deep structure, creating objects when missing
-    * ex.
-    * var foo = Select('address.contact.name',obj)
-    * Select('address.contact.name',obj,'Leeroy')
-    *
-    * @param {string} projection A dot path to the property you want to get/set
-    * @param {object} obj   (optional) The object to project on, defaults to 'this'
-    * @param {Any}    valueToSet (opional)  The value to set, if parts of the path of
-    *                 the projection is missing empty objects will be created.
-    * @returns {Any|undefined} returns the value at the end of the projection path
-    *                          or undefined if there is none.
-    */
-  return function(projection, obj, valueToSet) {
-    if (!obj) {
-      obj = this;
-    }
-    //Support [] array syntax
-    var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
-
-    if (typeof valueToSet !== 'undefined' && parts.length === 1) {
-      //special case, just setting one variable
-      obj[parts[0]] = valueToSet;
-      return obj;
-    }
-
-    if (typeof valueToSet !== 'undefined' &&
-        typeof obj[parts[0]] === 'undefined') {
-       // We need to look ahead to check if array is appropriate
-      obj[parts[0]] = parts.length > 2 && numRe.test(parts[1]) ? [] : {};
-    }
-
-    var value = obj[parts[0]];
-    for (var i = 1; i < parts.length; i++) {
-      // Special case: We allow JSON Form syntax for arrays using empty brackets
-      // These will of course not work here so we exit if they are found.
-      if (parts[i] === '') {
-        return undefined;
-      }
-      if (typeof valueToSet !== 'undefined') {
-        if (i === parts.length - 1) {
-          //last step. Let's set the value
-          value[parts[i]] = valueToSet;
-          return valueToSet;
-        } else {
-          // Make sure to create new objects on the way if they are not there.
-          // We need to look ahead to check if array is appropriate
-          var tmp = value[parts[i]];
-          if (typeof tmp === 'undefined' || tmp === null) {
-            tmp = numRe.test(parts[i + 1]) ? [] : {};
-            value[parts[i]] = tmp;
-          }
-          value = tmp;
-        }
-      } else if (value) {
-        //Just get nex value.
-        value = value[parts[i]];
-      }
-    }
-    return value;
-  };
-}]);
-
 (function() {
   'use strict';
 
@@ -2349,11 +2350,11 @@ angular.module('schemaForm').directive('sfChanged', function() {
   };
 });
 
+
 /**
- * Created by Luke on 31/08/2016.
- */
-angular.module('schemaForm').directive('jsExpression', ['sfValidator', '$parse', 'sfSelect',
-    function (sfValidator, $parse, sfSelect) {
+* Created by Luke on 31/08/2016.
+*/
+angular.module('schemaForm').directive('jsExpression', [function() {
 
         return {
             restrict: 'A',
@@ -2363,54 +2364,28 @@ angular.module('schemaForm').directive('jsExpression', ['sfValidator', '$parse',
             priority: 500,
             require: '?ngModel',
             link: function ($scope, $element, $attr, ngModel, $transclude) {
-                var block, childScope, previousElements;
-
                 var form = $scope.form;
                 var schema = form.schema;
 
-                // New version
-                // jsExpression: string
-                // errorMessage: {
-                //     jsExpression: string
-                // }
-
-                if (schema.jsExpression) {
-                    if (schema.errorMessage && schema.errorMessage.jsExpression) {
-                        if (!form.validationMessage) {
-                            form.validationMessage = {};
-                        } else if (typeof form.validationMessage === "string") {
-                            var defaultValidationMessage = form.validationMessage;
-                            $scope.form.validationMessage = {};
-                            $scope.form.validationMessage["202"] = defaultValidationMessage;
-                        }
-                        form.validationMessage['jsExpression'] = schema.errorMessage.jsExpression;
-                    }
-                }
-
-                $scope.$watch($attr.jsExpression, function watchAction(value) {
-
-                    if (value) {
-                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  valid");
-                        $scope.form.jsExpressionResult = true;
-                        if ($scope.ngModel.$$parentForm.$dirty)
-                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression', true);
-                    } else {
-                        //console.log('schemaForm.error.' + $scope.form.key.join('.') + "  complexValidation  invalid");
-                        $scope.form.jsExpressionResult = false;
-
-                        //FIXME, check till root form
-                        var isFormDirty = $scope.ngModel.$$parentForm.$dirty;
-                        if (!isFormDirty && $scope.ngModel.$$parentForm.$$parentForm)
-                            isFormDirty = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
-
-                        if (isFormDirty)
-                            $scope.$broadcast('schemaForm.error.' + $scope.form.key.join('.'), 'jsExpression');
+                $scope.$watch($attr.jsExpression, function(value) {
+                    var validity = !!value; // Just need true or false
+                    $scope.form.jsExpressionResult = validity;
+                    if (isFormDirty()) {
+                        $scope.$broadcast('schemaForm.error.' + $scope.getModelPath().join('.'), 'jsExpression', null, validity);
                     }
                 });
+
+                function isFormDirty() {
+                    //FIXME, check till root form
+                    var result = $scope.ngModel.$$parentForm.$dirty;
+                    if (!result && $scope.ngModel.$$parentForm.$$parentForm) {
+                        result = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
+                    }
+                    return result;
+                }
             }
         };
     }]);
-
 /**
  * Default angular-schema-form directive, not currently used
  * TODO: confirm this is the case, as this directive does not handle complexValidation events.
@@ -3281,12 +3256,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             return viewValue;
           }
 
-          var result ={'valid':true}
-          //skip validation against schema for uiselectmultiple since the viewValue from it is not the modelValue.
-          if(form.type!=='uiselectmultiple') 	 {
-            var result =  sfValidator.validate(form, viewValue);
-          }
-          //console.log('result is', result)
+          var result = {'valid': true}
           // Since we might have different tv4 errors we must clear all
           // errors that start with tv4-
           Object.keys(ngModel.$error)
@@ -3310,13 +3280,13 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
-            if(form.jsExpressionResult===false) {
-              ngModel.$setValidity('jsExpression' , false);
-              error = {'code':'jsExpression'};
+            if (form.jsExpressionResult === false) {
+              ngModel.$setValidity('jsExpression', false);
+              error = {'code': 'jsExpression'};
               return viewValue;
-            }else if(form.remoteValidationResult===false) {
-              ngModel.$setValidity('remoteValidation' , false);
-              error = {'code':'remoteValidation'};
+            } else if (form.remoteValidationResult === false) {
+              ngModel.$setValidity('remoteValidation', false);
+              error = {'code': 'remoteValidation'};
               return viewValue;
             } else {
               return viewValue;
@@ -3357,7 +3327,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function() {
             //console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm'&& e !== 'jsExpression' && e !== 'remoteValidation';});
+            return !Object.keys(ngModel.$error).some(function(e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation';});
           };
         }
 
@@ -3393,8 +3363,8 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
 
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
-            // FIXME: i think this should handle more than one case at a time if we wan't multiple messages displayed per field?
-			ngModel.$setValidity('tv4-302', true); //hotfix for not reset required validation
+            // FIXME: i think this should handle more than one case at a time if we want multiple messages displayed per field?
+            ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
             if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
               ngModel.$setValidity('tv4-302', false);
             } else if (form.jsExpressionResult === false ) {
@@ -3404,7 +3374,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             } else if(form.remoteValidationResult === false){
               ngModel.$setValidity('remoteValidation', false);
             } else if(form.remoteValidationResult){
-              ngModel.$setValidity('jsExpression', true);
+              ngModel.$setValidity('remoteValidation', true);
             }
 
           } else {
@@ -3648,26 +3618,21 @@ angular.module('schemaForm').directive('sfField',
                         if (form.key) {
                             // It looks better with dot notation.
                             scope.$on(
-                                'schemaForm.error.' + form.key.join('.'),
+                                'schemaForm.error.' + scope.getModelPath().join('.'),
                                 function(event, error, validationMessage, validity) {
 
-                                    // If ComplexValidation passed, we don't need to do anything.
-                                    if("jsExpression" === error
-                                      &&validationMessage===true
-                                      &&!scope.ngModel.$error.jsExpression) {
-                                        return;
+                                    // If jsExpression passed, we don't need to do anything.
+                                    if ("jsExpression" === error
+                                      && validity === true
+                                      && !scope.ngModel.$error.jsExpression) {
+                                      return;
                                     }
 
                                     // If RemoteValidation passed, we don't need to do anything.
                                     if("remoteValidation" === error
-                                      &&validationMessage===true
-                                      &&!scope.ngModel.$error.remoteValidation) {
-                                        return;
-                                    }
-
-                                    if (validationMessage === true || validationMessage === false) {
-                                        validity = validationMessage;
-                                        validationMessage = undefined;
+                                      && validity === true
+                                      && !scope.ngModel.$error.remoteValidation) {
+                                      return;
                                     }
 
                                     if (scope.ngModel && error) {
@@ -3700,7 +3665,7 @@ angular.module('schemaForm').directive('sfField',
 
                                             // Setting or removing a validity can change the field to believe its valid
                                             // but its not. So lets trigger its validation as well.
-                                            scope.$broadcast('schemaFormValidate');
+                                            scope.$broadcast('schemaFormValidate'); // kelin: this is just for the field itself.
                                         }
                                     }
                                 }

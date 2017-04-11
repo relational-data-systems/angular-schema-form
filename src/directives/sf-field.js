@@ -204,26 +204,21 @@ angular.module('schemaForm').directive('sfField',
                         if (form.key) {
                             // It looks better with dot notation.
                             scope.$on(
-                                'schemaForm.error.' + form.key.join('.'),
+                                'schemaForm.error.' + scope.getModelPath().join('.'),
                                 function(event, error, validationMessage, validity) {
 
-                                    // If ComplexValidation passed, we don't need to do anything.
-                                    if("jsExpression" === error
-                                      &&validationMessage===true
-                                      &&!scope.ngModel.$error.jsExpression) {
-                                        return;
+                                    // If jsExpression passed, we don't need to do anything.
+                                    if ("jsExpression" === error
+                                      && validity === true
+                                      && !scope.ngModel.$error.jsExpression) {
+                                      return;
                                     }
 
                                     // If RemoteValidation passed, we don't need to do anything.
                                     if("remoteValidation" === error
-                                      &&validationMessage===true
-                                      &&!scope.ngModel.$error.remoteValidation) {
-                                        return;
-                                    }
-
-                                    if (validationMessage === true || validationMessage === false) {
-                                        validity = validationMessage;
-                                        validationMessage = undefined;
+                                      && validity === true
+                                      && !scope.ngModel.$error.remoteValidation) {
+                                      return;
                                     }
 
                                     if (scope.ngModel && error) {
@@ -256,7 +251,7 @@ angular.module('schemaForm').directive('sfField',
 
                                             // Setting or removing a validity can change the field to believe its valid
                                             // but its not. So lets trigger its validation as well.
-                                            scope.$broadcast('schemaFormValidate');
+                                            scope.$broadcast('schemaFormValidate'); // kelin: this is just for the field itself.
                                         }
                                     }
                                 }
