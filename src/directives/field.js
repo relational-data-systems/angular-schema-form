@@ -1,6 +1,6 @@
 /**
  * Default angular-schema-form directive, not currently used
- * TODO: confirm this is the case, as this directive does not handle complexValidation events.
+ * TODO: confirm this is the case, as this directive does not handle jsExpression events.
  */
 angular.module('schemaForm').directive('old-sfField',
     ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
