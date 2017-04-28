@@ -52,7 +52,7 @@
     function getModelPath(scope) {
       var modelPath;
 
-      if (!scope.form || !scope.model) {
+      if (!scope.form) {
         return null;
       }
       _assertValidateSfScope(scope);
@@ -144,14 +144,6 @@
 
       if (!scope.form) {
         throw scope + " does not have a form object";
-      }
-
-      // if (!scope.form.key) {
-      //   throw scope + " does not have a form key";
-      // }
-
-      if (!scope.model) {
-        throw "there is no model in this scope";
       }
     }
 
