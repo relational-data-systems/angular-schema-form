@@ -38,9 +38,9 @@
     "karma.conf.js"
   ],
   "dependencies": {
-    "angular": ">= 1.2",
+    "angular": "^1.5.8",
     "tv4": "~1.0.15",
-    "angular-sanitize": ">= 1.2",
+    "angular-sanitize": "^1.5.8",
     "objectpath": "~1.1.0"
   },
   "devDependencies": {
@@ -48,7 +48,7 @@
     "angular-schema-form-datepicker": ">= 0.1.0",
     "angular-schema-form-colorpicker": ">= 0.1.0",
     "jquery": "~2.1.1",
-    "angular-mocks": ">= 1.2",
+    "angular-mocks": "^1.5.8",
     "tx-tinymce": ">= 0.0.5",
     "angular-ui-sortable": ">=0.12.11",
     "bootstrap-vertical-tabs": "~1.2.0",
