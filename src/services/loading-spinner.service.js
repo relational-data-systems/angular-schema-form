@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   angular
@@ -8,8 +8,7 @@
   LoadingSpinnerService.$inject = ['$log', '$sce', '$animate', '$http', '$q', '$timeout'];
 
   /* @ngInject */
-  function LoadingSpinnerService($log, $sce, $animate, $http, $q, $timeout) {
-
+  function LoadingSpinnerService ($log, $sce, $animate, $http, $q, $timeout) {
     var DELAY_TO_REMOVE = 500;
 
     var spinnerOverlayTemplateSmall = '<div class="rds-spinner-overlay"><div class="vertical-align-wrapper"><div class="rds-spinner-icon-sm"></div></div></div>';
@@ -37,13 +36,13 @@
 
     var _elemId2Spinner = {};
 
-    function _getUniqueId(targetElement) {
+    function _getUniqueId (targetElement) {
       // Maybe there can be a better way to get a unique id ..?
       targetElement.uniqueId();
-      return targetElement.prop("id");
+      return targetElement.prop('id');
     }
 
-    function addSpinnerOverlay(spinnerSize, targetElement) {
+    function addSpinnerOverlay (spinnerSize, targetElement) {
       var spinnerOverlayElement = _getSpinnerOverlayElement(spinnerSize);
       if (spinnerOverlayElement) {
         var elementId = _getUniqueId(targetElement);
@@ -56,7 +55,7 @@
       }
     }
 
-    function removeSpinnerOverlay(targetElement) {
+    function removeSpinnerOverlay (targetElement) {
       var uniqueId = _getUniqueId(targetElement);
       var spinnerOverlayElement = _elemId2Spinner[uniqueId];
       if (spinnerOverlayElement) {
@@ -71,8 +70,8 @@
      * @param {Object} overlayConfig {spinnerSize: 'sm|md|lg', element: jQlite}
      * @return {Promise}
      */
-    function httpWithSpinner(httpParams, form, overlayConfig) {
-      return $q(function(resolve, reject) {
+    function httpWithSpinner (httpParams, form, overlayConfig) {
+      return $q(function (resolve, reject) {
         if (form) {
           form.httpPending = true;
         }
@@ -81,16 +80,16 @@
         }
 
         $http(httpParams)
-          .then(function(response) {
+          .then(function (response) {
             _resetPendingFlagAndSpinner();
             resolve(response);
-          }, function(error) {
+          }, function (error) {
             _resetPendingFlagAndSpinner();
             reject(error);
           });
 
-        function _resetPendingFlagAndSpinner() {
-          $timeout(function() {
+        function _resetPendingFlagAndSpinner () {
+          $timeout(function () {
             if (form) {
               form.httpPending = false;
             }
@@ -99,14 +98,14 @@
             }
           }, DELAY_TO_REMOVE);
         }
-      })
+      });
     }
 
-    function _isValidOverlayConfig(overlayConfig) {
+    function _isValidOverlayConfig (overlayConfig) {
       return overlayConfig && overlayConfig.spinnerSize && overlayConfig.element;
     }
 
-    function _getSpinnerOverlayElement(spinnerSize) {
+    function _getSpinnerOverlayElement (spinnerSize) {
       var spinnerOverlayElement = null;
       if (spinnerSize) {
         switch (spinnerSize) {
@@ -123,6 +122,5 @@
       }
       return spinnerOverlayElement !== null ? angular.copy(spinnerOverlayElement) : null;
     }
-
   }
 })();
