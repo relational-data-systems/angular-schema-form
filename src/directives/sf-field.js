@@ -189,12 +189,12 @@ angular.module('schemaForm').directive('sfField',
              */
             scope.errorMessage = function (schemaError) {
               return sfErrorMessage.interpolate(
-                                (schemaError && schemaError.code + '') || 'default',
-                                (scope.ngModel && scope.ngModel.$modelValue) || '',
-                                (scope.ngModel && scope.ngModel.$viewValue) || '',
-                                scope.form,
-                                scope.options && scope.options.validationMessage
-                            );
+                (schemaError && schemaError.code + '') || 'default',
+                (scope.ngModel && scope.ngModel.$modelValue) || '',
+                (scope.ngModel && scope.ngModel.$viewValue) || '',
+                scope.form,
+                scope.options && scope.options.validationMessage
+              );
             };
 
             var form = scope.form;
@@ -292,6 +292,55 @@ angular.module('schemaForm').directive('sfField',
                     }
                   }
                 }
+              });
+            }
+
+            if (form.derivedFrom) {
+              var model = scope.model;
+              var derivedFrom = form.derivedFrom;
+
+              $log.debug('sfField#derivedFromPropertyHandler - ' + angular.toJson(form.key) + ' has derived-value expression: ' + derivedFrom);
+
+              if (!model) {
+                $log.warn('sfField#derivedFromPropertyHandler - ' + angular.toJson(form.key) + ' is not associated with the form model, so won\'t do anything here');
+              }
+
+              var exp;
+              try {
+                exp = $parse(derivedFrom);
+              } catch (e) {
+                $log.error('sfField#derivedFromPropertyHandler - derived-value expression: ' + form.derivedFrom + ' is invalid');
+                return;
+              }
+
+              $timeout(function () {
+                var ngModel = scope.ngModel;
+
+                if (!ngModel) {
+                  $log.warn('sfField#derivedFromPropertyHandler - ' + angular.toJson(form.key) + ' is not associated with an ng-model, so won\'t do anything here');
+                  return;
+                }
+
+                var modelPath = scope.getModelPath();
+
+                scope.$watch(function () {
+                  // The field itself should be excluded from the watched model object, to avoid the unnecessary second-time update
+                  var modelToWatch = angular.copy(model);
+                  _.set(modelToWatch, modelPath, null);
+                  return modelToWatch;
+                }, function (modelNewVal, oldVal) {
+                  if (angular.equals(modelNewVal, oldVal)) {
+                    return;
+                  }
+                  $timeout(function () {
+                    var result = exp({model: modelNewVal});
+                    // ngModel.$setViewValue(result);
+                    // ngModel.$commitViewValue();
+                    scope.modelValue(result);
+                    $log.debug('sfField#derivedFromPropertyHandler - updated ' + angular.toJson(form.key) + ' to ' + result + ' by derived-value expression: ' + derivedFrom);
+                  });
+                }, true);
+                $log.debug('sfField#derivedFromPropertyHandler - watching model for updating ' + angular.toJson(form.key) + ' with derived-value expression: ' + derivedFrom);
               });
             }
 
