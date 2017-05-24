@@ -4,7 +4,7 @@
  * @kind function
  *
  */
-angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
+angular.module('schemaForm').factory('sfSelect', ['sfPath', function (sfPath) {
   var numRe = /^\d+$/;
 
   /**
@@ -23,15 +23,15 @@ angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
     * @returns {Any|undefined} returns the value at the end of the projection path
     *                          or undefined if there is none.
     */
-  return function(projection, obj, valueToSet) {
+  return function (projection, obj, valueToSet) {
     if (!obj) {
       obj = this;
     }
-    //Support [] array syntax
+    // Support [] array syntax
     var parts = typeof projection === 'string' ? sfPath.parse(projection) : projection;
 
     if (typeof valueToSet !== 'undefined' && parts.length === 1) {
-      //special case, just setting one variable
+      // special case, just setting one variable
       obj[parts[0]] = valueToSet;
       return obj;
     }
@@ -51,7 +51,7 @@ angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
       }
       if (typeof valueToSet !== 'undefined') {
         if (i === parts.length - 1) {
-          //last step. Let's set the value
+          // last step. Let's set the value
           value[parts[i]] = valueToSet;
           return valueToSet;
         } else {
@@ -65,7 +65,7 @@ angular.module('schemaForm').factory('sfSelect', ['sfPath', function(sfPath) {
           value = tmp;
         }
       } else if (value) {
-        //Just get nex value.
+        // Just get nex value.
         value = value[parts[i]];
       }
     }

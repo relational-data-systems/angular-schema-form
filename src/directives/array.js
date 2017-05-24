@@ -3,10 +3,9 @@
  * DEPRECATED with the new builder use the sfNewArray instead.
  */
 angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sfValidator', 'sfPath',
-  function(sfSelect, schemaForm, sfValidator, sfPath) {
-
-    var setIndex = function(index) {
-      return function(form) {
+  function (sfSelect, schemaForm, sfValidator, sfPath) {
+    var setIndex = function (index) {
+      return function (form) {
         if (form.key) {
           form.key[form.key.indexOf('')] = index;
         }
@@ -17,7 +16,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
       restrict: 'A',
       scope: true,
       require: '?ngModel',
-      link: function(scope, element, attrs, ngModel) {
+      link: function (scope, element, attrs, ngModel) {
         var formDefCache = {};
 
         scope.validateArray = angular.noop;
@@ -29,15 +28,13 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
           scope.$emit('schemaFormPropagateNgModelController', ngModel);
         }
 
-
         // Watch for the form definition and then rewrite it.
         // It's the (first) array part of the key, '[]' that needs a number
         // corresponding to an index of the form.
-        var once = scope.$watch(attrs.sfArray, function(form) {
+        var once = scope.$watch(attrs.sfArray, function (form) {
           if (!form) {
             return;
           }
-
 
           // An array model always needs a key so we know what part of the model
           // to look at. This makes us a bit incompatible with JSON Form, on the
@@ -48,7 +45,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
           // the outside so let's watch for that. We use an ordinary watch since the only case
           // we're really interested in is if its a new instance.
           var key = sfPath.normalize(form.key);
-          scope.$watch('model' + (key[0] !== '[' ? '.' : '') + key, function(value) {
+          scope.$watch('model' + (key[0] !== '[' ? '.' : '') + key, function (value) {
             list = scope.modelArray = value;
           });
 
@@ -62,7 +59,6 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
 
           // Arrays with titleMaps, i.e. checkboxes doesn't have items.
           if (form.items) {
-
             // To be more compatible with JSON Form we support an array of items
             // in the form definition of "array" (the schema just a value).
             // for the subforms code to work this means we wrap everything in a
@@ -71,7 +67,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
             if (form.items.length > 1) {
               subForm = {
                 type: 'section',
-                items: form.items.map(function(item) {
+                items: form.items.map(function (item) {
                   item.ngModelOptions = form.ngModelOptions;
                   if (angular.isUndefined(item.readonly)) {
                     item.readonly = form.readonly;
@@ -80,12 +76,11 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
                 })
               };
             }
-
           }
 
           // We ceate copies of the form on demand, caching them for
           // later requests
-          scope.copyWithIndex = function(index) {
+          scope.copyWithIndex = function (index) {
             if (!formDefCache[index]) {
               if (subForm) {
                 var copy = angular.copy(subForm);
@@ -97,11 +92,10 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
             return formDefCache[index];
           };
 
-          scope.appendToArray = function() {
+          scope.appendToArray = function () {
             var len = list.length;
             var copy = scope.copyWithIndex(len);
-            schemaForm.traverseForm(copy, function(part) {
-
+            schemaForm.traverseForm(copy, function (part) {
               if (part.key) {
                 var def;
                 if (angular.isDefined(part['default'])) {
@@ -136,7 +130,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
             return list;
           };
 
-          scope.deleteFromArray = function(index) {
+          scope.deleteFromArray = function (index) {
             list.splice(index, 1);
 
             // Trigger validation.
@@ -167,20 +161,20 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
 
             // We watch the model for changes and the titleMapValues to reflect
             // the modelArray
-            var updateTitleMapValues = function(arr) {
+            var updateTitleMapValues = function (arr) {
               scope.titleMapValues = [];
               arr = arr || [];
 
-              form.titleMap.forEach(function(item) {
+              form.titleMap.forEach(function (item) {
                 scope.titleMapValues.push(arr.indexOf(item.value) !== -1);
               });
             };
-            //Catch default values
+            // Catch default values
             updateTitleMapValues(scope.modelArray);
             scope.$watchCollection('modelArray', updateTitleMapValues);
 
-            //To get two way binding we also watch our titleMapValues
-            scope.$watchCollection('titleMapValues', function(vals, old) {
+            // To get two way binding we also watch our titleMapValues
+            scope.$watchCollection('titleMapValues', function (vals, old) {
               if (vals && vals !== old) {
                 var arr = scope.modelArray;
 
@@ -189,7 +183,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
                 while (arr.length > 0) {
                   arr.pop();
                 }
-                form.titleMap.forEach(function(item, index) {
+                form.titleMap.forEach(function (item, index) {
                   if (vals[index]) {
                     arr.push(item.value);
                   }
@@ -205,7 +199,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
           if (ngModel) {
             var error;
 
-            scope.validateArray = function() {
+            scope.validateArray = function () {
               // The actual content of the array is validated by each field
               // so we settle for checking validations specific to arrays
 
@@ -221,14 +215,13 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
               // Since we might have different tv4 errors we must clear all
               // errors that start with tv4-
               Object.keys(ngModel.$error)
-                    .filter(function(k) { return k.indexOf('tv4-') === 0; })
-                    .forEach(function(k) { ngModel.$setValidity(k, true); });
+                    .filter(function (k) { return k.indexOf('tv4-') === 0; })
+                    .forEach(function (k) { ngModel.$setValidity(k, true); });
 
               if (result.valid === false &&
                   result.error &&
                   (result.error.dataPath === '' ||
                   result.error.dataPath === '/' + form.key[form.key.length - 1])) {
-
                 // Set viewValue to trigger $dirty on field. If someone knows a
                 // a better way to do it please tell.
                 ngModel.$setViewValue(scope.modelArray);
@@ -239,7 +232,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
 
             scope.$on('schemaFormValidate', scope.validateArray);
 
-            scope.hasSuccess = function() {
+            scope.hasSuccess = function () {
               if (scope.options && scope.options.pristine &&
                   scope.options.pristine.success === false) {
                 return ngModel.$valid &&
@@ -250,7 +243,7 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
               }
             };
 
-            scope.hasError = function() {
+            scope.hasError = function () {
               if (!scope.options || !scope.options.pristine || scope.options.pristine.errors !== false) {
                 // Show errors in pristine forms. The default.
                 // Note that "validateOnRender" option defaults to *not* validate initial form.
@@ -263,10 +256,9 @@ angular.module('schemaForm').directive('sfArray', ['sfSelect', 'schemaForm', 'sf
               }
             };
 
-            scope.schemaError = function() {
+            scope.schemaError = function () {
               return error;
             };
-
           }
 
           once();

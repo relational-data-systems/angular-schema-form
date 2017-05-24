@@ -1,16 +1,15 @@
 /*  Common code for validating a value against its form and schema definition */
 /* global tv4 */
-angular.module('schemaForm').factory('sfValidator', [function() {
-
+angular.module('schemaForm').factory('sfValidator', [function () {
   var validator = {};
 
-  function recResetNullValues(obj) {
+  function recResetNullValues (obj) {
     for (var property in obj) {
       if (obj.hasOwnProperty(property)) {
         var propValue = obj[property];
         if (propValue === null || propValue === undefined) {
           delete obj[property];
-        } else if (typeof propValue === "object") {
+        } else if (typeof propValue === 'object') {
           recResetNullValues(obj[property], property);
         } else {
           if (obj[property] === null) {
@@ -29,7 +28,7 @@ angular.module('schemaForm').factory('sfValidator', [function() {
    * @param {Any} value the value to validate.
    * @return a tv4js result object.
    */
-  validator.validate = function(form, value) {
+  validator.validate = function (form, value) {
     if (!form) {
       return {valid: true};
     }
@@ -60,7 +59,7 @@ angular.module('schemaForm').factory('sfValidator', [function() {
     }
 
     // kelin: we want text, date fields to be as above as well
-    if (["", "text", "textarea", "date"].indexOf(form.type) !== -1) {
+    if (['', 'text', 'textarea', 'date'].indexOf(form.type) !== -1) {
       if (value === null) {
         value = undefined;
       }
@@ -68,7 +67,7 @@ angular.module('schemaForm').factory('sfValidator', [function() {
 
     // kelin - our own workaround for null value being rejected in select components
     // due to typeof(null) === 'object'
-    if (["select", "rds-dynamic-single-select", "rds-dynamic-radios", "radios-inline", "radiobuttons"].indexOf(form.type) !== -1) {
+    if (['select', 'rds-dynamic-single-select', 'rds-dynamic-radios', 'radios-inline', 'radiobuttons'].indexOf(form.type) !== -1) {
       if (value === null) {
         value = undefined;
       }
@@ -89,7 +88,6 @@ angular.module('schemaForm').factory('sfValidator', [function() {
       valueWrap[propName] = value;
     }
     return tv4.validateResult(valueWrap, wrap);
-
   };
 
   return validator;

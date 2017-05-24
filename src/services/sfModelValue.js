@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   angular
@@ -8,12 +8,12 @@
   sfModelValue.$inject = ['sfPath', '$rootScope', 'sfSelect', '$log'];
 
   /* @ngInject */
-  function sfModelValue(sfPath, $rootScope, sfSelect, $log) {
+  function sfModelValue (sfPath, $rootScope, sfSelect, $log) {
     service.getModelPath = getModelPath;
     service.interpArrayIndex = interpArrayIndex;
     return service;
 
-    function service(param1, param2, param3, param4) {
+    function service (param1, param2, param3, param4) {
       var scope, projection, obj, valueToSet;
 
       if (!(_isScope(param1))) {
@@ -42,14 +42,14 @@
         obj = param3;
         valueToSet = param4;
       } else {
-        $log.error("sfModelValue - incorrect param combination: ", param1, param2, param3, param4);
-        throw Error("sfModelValue - incorrect param combination");
+        $log.error('sfModelValue - incorrect param combination: ', param1, param2, param3, param4);
+        throw Error('sfModelValue - incorrect param combination');
       }
 
       return sfSelect(projection, obj, valueToSet);
     }
 
-    function getModelPath(scope) {
+    function getModelPath (scope) {
       var modelPath;
 
       if (!scope.form) {
@@ -65,11 +65,11 @@
         if (arrayIndices.length > 0) { // This means that we are inside an array
           var parentArrayComponentKey = _findParentArrayComponentKey(scope);
           if (!parentArrayComponentKey) {
-            $log.error("sfModelValue#getModelPath - failed to find an array that contains this component: ", form);
+            $log.error('sfModelValue#getModelPath - failed to find an array that contains this component: ', form);
             return null;
           }
           modelPath = angular.copy(parentArrayComponentKey);
-          modelPath.push("");
+          modelPath.push('');
           _updateModelPathWithArrayIndices(modelPath, arrayIndices);
           return modelPath;
         } else {
@@ -78,7 +78,7 @@
       }
     }
 
-    function _findParentArrayComponentKey(scope) {
+    function _findParentArrayComponentKey (scope) {
       var result = null;
       var currentScope;
       while ((currentScope = scope.$parent) != null) {
@@ -91,23 +91,23 @@
       return result;
     }
 
-    function _updateModelPathWithArrayIndices(modelPath, arrayIndices) {
+    function _updateModelPathWithArrayIndices (modelPath, arrayIndices) {
       for (var i = modelPath.length - 1; i >= 0; i--) {
         if (modelPath[i] === '') {
           if (arrayIndices.length > 0) {
             var scopeArrayIndex = arrayIndices.splice(-1, 1)[0];
             modelPath[i] = scopeArrayIndex;
           } else {
-            $log.error("sfModelValue#_updateModelPathWithArrayIndices - Cannot find any more array index for the model path", arrayIndices, modelPath);
+            $log.error('sfModelValue#_updateModelPathWithArrayIndices - Cannot find any more array index for the model path', arrayIndices, modelPath);
           }
         }
       }
       if (arrayIndices.length !== 0) {
-        $log.error("sfModelValue#_updateModelPathWithArrayIndices - array indices found along the scope hierarcy does not match to model path", arrayIndices, modelPath);
+        $log.error('sfModelValue#_updateModelPathWithArrayIndices - array indices found along the scope hierarcy does not match to model path', arrayIndices, modelPath);
       }
     }
 
-    function interpArrayIndex(scope, /*"array[].item" or ["array", "", "item"]*/ strOrArray) {
+    function interpArrayIndex (scope, /* "array[].item" or ["array", "", "item"] */ strOrArray) {
       _assertValidateSfScope(scope);
       var arrayIndices = _getArrayIndicesByScopeHierarchy(scope);
       if (angular.isString(strOrArray)) {
@@ -115,14 +115,14 @@
         var regex = /(\[\])+/g;
         var matched;
         while ((matched = regex.exec(str)) !== null) {
-            var replaceCount = matched[0].length / 2;
-            for (var i = 0; i < replaceCount; i++) {
-                if (i < arrayIndices.length) {
-                    str = str.replace(/\[\]/, "[" + arrayIndices[i] + "]");
-                } else {
-                    $log.error("sfModelValue#interpArrayIndex - Cannot find any more array index for the current match", arrayIndices, matched);
-                }
+          var replaceCount = matched[0].length / 2;
+          for (var i = 0; i < replaceCount; i++) {
+            if (i < arrayIndices.length) {
+              str = str.replace(/\[\]/, '[' + arrayIndices[i] + ']');
+            } else {
+              $log.error('sfModelValue#interpArrayIndex - Cannot find any more array index for the current match', arrayIndices, matched);
             }
+          }
         }
         return str;
       } else if (angular.isArray(strOrArray)) {
@@ -130,24 +130,23 @@
         _updateModelPathWithArrayIndices(arr, arrayIndices);
         return arr;
       }
-
     }
 
-    function _isScope(candidate) {
+    function _isScope (candidate) {
       return candidate instanceof $rootScope.constructor;
     }
 
-    function _assertValidateSfScope(scope) {
+    function _assertValidateSfScope (scope) {
       if (!_isScope(scope)) {
-        throw scope + " is not a scope";
+        throw scope + ' is not a scope';
       }
 
       if (!scope.form) {
-        throw scope + " does not have a form object";
+        throw scope + ' does not have a form object';
       }
     }
 
-    function _getArrayIndicesByScopeHierarchy(scope) {
+    function _getArrayIndicesByScopeHierarchy (scope) {
       var result = [];
       var currentScope = scope;
       while (currentScope) {
@@ -155,9 +154,8 @@
         // Add an extra override to first check for $gridIndex. Support required for data grid
         if (currentScope.hasOwnProperty('$gridRowIndex')) {
           index = currentScope.$gridRowIndex;
-        }
-        else if (currentScope.hasOwnProperty('$index')) {
-            index = currentScope.$index;
+        } else if (currentScope.hasOwnProperty('$index')) {
+          index = currentScope.$index;
         }
         if (angular.isNumber(index)) {
           result.unshift(index);
@@ -167,6 +165,5 @@
       }
       return result;
     }
-
   }
 })();

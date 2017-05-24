@@ -1,39 +1,37 @@
 
 // FIXME: type template (using custom builder)
-angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(sfPathProvider) {
-
+angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function (sfPathProvider) {
   var SNAKE_CASE_REGEXP = /[A-Z]/g;
-  var snakeCase = function(name, separator) {
+  var snakeCase = function (name, separator) {
     separator = separator || '_';
-    return name.replace(SNAKE_CASE_REGEXP, function(letter, pos) {
+    return name.replace(SNAKE_CASE_REGEXP, function (letter, pos) {
       return (pos ? separator : '') + letter.toLowerCase();
     });
   };
   var formId = 0;
 
-  if (!("firstElementChild" in document.createDocumentFragment())) {
-    Object.defineProperty(DocumentFragment.prototype, "firstElementChild", {
+  if (!('firstElementChild' in document.createDocumentFragment())) {
+    Object.defineProperty(DocumentFragment.prototype, 'firstElementChild', {
       get: function () {
-        for (var nodes = this.childNodes, n, i = 0, l = nodes.length; i < l; ++i)
-          if (n = nodes[i], 1 === n.nodeType) return n;
+        for (var nodes = this.childNodes, n, i = 0, l = nodes.length; i < l; ++i) { if (n = nodes[i], n.nodeType === 1) return n; }
         return null;
       }
     });
   }
 
   var builders = {
-    sfField: function(args) {
+    sfField: function (args) {
       args.fieldFrag.firstElementChild.setAttribute('sf-field', formId);
 
       // We use a lookup table for easy access to our form.
       args.lookup['f' + formId] = args.form;
       formId++;
     },
-    ngModel: function(args) {
+    ngModel: function (args) {
       if (!args.form.key) {
         return;
       }
-      var key  = args.form.key;
+      var key = args.form.key;
 
       // Redact part of the key, used in arrays
       // KISS keyRedaction is a number.
@@ -73,7 +71,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
             }
           }
         } else {
-          var  val = n.getAttribute(conf);
+          var val = n.getAttribute(conf);
           if (val && val.indexOf('$$value$$')) {
             n.setAttribute(conf, val.replace(/\$\$value\$\$/g, modelValue));
           } else {
@@ -82,18 +80,18 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
-    simpleTransclusion: function(args) {
+    simpleTransclusion: function (args) {
       var children = args.build(args.form.items, args.path + '.items', args.state);
       args.fieldFrag.firstChild.appendChild(children);
     },
 
     // Patch on ngModelOptions, since it doesn't like waiting for its value.
-    ngModelOptions: function(args) {
+    ngModelOptions: function (args) {
       if (args.form.ngModelOptions && Object.keys(args.form.ngModelOptions).length > 0) {
         args.fieldFrag.firstChild.setAttribute('ng-model-options', JSON.stringify(args.form.ngModelOptions));
       }
     },
-    transclusion: function(args) {
+    transclusion: function (args) {
       var transclusions = args.fieldFrag.querySelectorAll('[sf-field-transclude]');
 
       if (transclusions.length) {
@@ -113,7 +111,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
-    condition: function(args) {
+    condition: function (args) {
       // Do we have a condition? Then we slap on an ng-if on all children,
       // but be nice to existing ng-if.
       if (args.form.condition) {
@@ -134,8 +132,8 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
             ngIf = child.getAttribute('ng-if');
             child.setAttribute(
               'ng-if',
-              ngIf ?
-              '(' + ngIf +
+              ngIf
+              ? '(' + ngIf +
               ') || (' + evalExpr + ')'
                 : evalExpr
             );
@@ -143,7 +141,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
         }
       }
     },
-    array: function(args) {
+    array: function (args) {
       // var items = args.fieldFrag.querySelector('[schema-form-array-items]');
       var items = args.fieldFrag.querySelectorAll('[schema-form-array-items]');
       // kelin: Now we have more than one elements that have schema-form-array-items in the
@@ -176,15 +174,14 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
           item.appendChild(childFrag);
         }
       }
-
     },
-    jsExpression: function(args) {
+    jsExpression: function (args) {
       if (args.form.schema && args.form.schema.jsExpression) {
         var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index})';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
           // kelin: try to make the "evalExpr" work in array. (Only for one level of array). Array inside another array is still not supported.
-          strKey = strKey.replace(/\[''\]/g, "[$index]");
+          strKey = strKey.replace(/\[''\]/g, '[$index]');
           evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
@@ -207,10 +204,8 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
   ];
   this.stdBuilders = stdBuilders;
 
-  this.$get = ['$templateCache', 'schemaFormDecorators', 'sfPath', function($templateCache, schemaFormDecorators, sfPath) {
-
-
-    var checkForSlot = function(form, slots) {
+  this.$get = ['$templateCache', 'schemaFormDecorators', 'sfPath', function ($templateCache, schemaFormDecorators, sfPath) {
+    var checkForSlot = function (form, slots) {
       // Finally append this field to the frag.
       // Check for slots
       if (form.key) {
@@ -224,13 +219,12 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
       }
     };
 
-    var build = function(items, decorator, templateFn, slots, path, state, lookup) {
+    var build = function (items, decorator, templateFn, slots, path, state, lookup) {
       state = state || {};
       lookup = lookup || Object.create(null);
       path = path || 'schemaForm.form';
       var container = document.createDocumentFragment();
-      items.reduce(function(frag, f, index) {
-
+      items.reduce(function (frag, f, index) {
         // Sanity check.
         if (!f.type) {
           return frag;
@@ -241,13 +235,12 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
           // Backwards compatability build
           var n = document.createElement(snakeCase(decorator.__name, '-'));
           if (state.arrayCompatFlag) {
-            n.setAttribute('form','copyWithIndex($index)');
+            n.setAttribute('form', 'copyWithIndex($index)');
           } else {
             n.setAttribute('form', path + '[' + index + ']');
           }
 
           (checkForSlot(f, slots) || frag).appendChild(n);
-
         } else {
           var tmpl;
 
@@ -276,9 +269,9 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
             path: path + '[' + index + ']',
 
             // Recursive build fn
-            build: function(items, path, state) {
+            build: function (items, path, state) {
               return build(items, decorator, templateFn, slots, path, state, lookup);
-            },
+            }
 
           };
 
@@ -289,7 +282,7 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
           if (typeof builderFn === 'function') {
             builderFn(args);
           } else {
-            builderFn.forEach(function(fn) { fn(args); });
+            builderFn.forEach(function (fn) { fn(args); });
           }
 
           // Append
@@ -305,19 +298,17 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function(s
       /**
        * Builds a form from a canonical form definition
        */
-      build: function(form, decorator, slots, lookup) {
-        return build(form, decorator, function(form, field) {
+      build: function (form, decorator, slots, lookup) {
+        return build(form, decorator, function (form, field) {
           if (form.type === 'template') {
             return form.template;
           }
           return $templateCache.get(field.template);
         }, slots, undefined, undefined, lookup);
-
       },
       builder: builders,
       stdBuilders: stdBuilders,
       internalBuild: build
     };
   }];
-
 }]);

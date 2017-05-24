@@ -3,11 +3,10 @@
  * TODO: confirm this is the case, as this directive does not handle jsExpression events.
  */
 angular.module('schemaForm').directive('old-sfField',
-    ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-     'sfPath','sfSelect',
-    function($parse,  $compile,  $http,  $templateCache, $interpolate, $q, sfErrorMessage,
+  ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
+    'sfPath', 'sfSelect',
+    function ($parse, $compile, $http, $templateCache, $interpolate, $q, sfErrorMessage,
              sfPath, sfSelect) {
-
       return {
         restrict: 'AE',
         replace: false,
@@ -15,10 +14,10 @@ angular.module('schemaForm').directive('old-sfField',
         scope: true,
         require: '^sfSchema',
         link: {
-          pre: function(scope, element, attrs, sfSchema) {
-            //The ngModelController is used in some templates and
-            //is needed for error messages,
-            scope.$on('schemaFormPropagateNgModelController', function(event, ngModel) {
+          pre: function (scope, element, attrs, sfSchema) {
+            // The ngModelController is used in some templates and
+            // is needed for error messages,
+            scope.$on('schemaFormPropagateNgModelController', function (event, ngModel) {
               event.stopPropagation();
               event.preventDefault();
               scope.ngModel = ngModel;
@@ -27,23 +26,23 @@ angular.module('schemaForm').directive('old-sfField',
             // Fetch our form.
             scope.form = sfSchema.lookup['f' + attrs.sfField];
           },
-          post: function(scope, element, attrs, sfSchema) {
-            //Keep error prone logic from the template
-            scope.showTitle = function() {
+          post: function (scope, element, attrs, sfSchema) {
+            // Keep error prone logic from the template
+            scope.showTitle = function () {
               return scope.form && scope.form.notitle !== true && scope.form.title;
             };
 
-            scope.listToCheckboxValues = function(list) {
+            scope.listToCheckboxValues = function (list) {
               var values = {};
-              angular.forEach(list, function(v) {
+              angular.forEach(list, function (v) {
                 values[v] = true;
               });
               return values;
             };
 
-            scope.checkboxValuesToList = function(values) {
+            scope.checkboxValuesToList = function (values) {
               var lst = [];
-              angular.forEach(values, function(v, k) {
+              angular.forEach(values, function (v, k) {
                 if (v) {
                   lst.push(k);
                 }
@@ -51,12 +50,12 @@ angular.module('schemaForm').directive('old-sfField',
               return lst;
             };
 
-            scope.buttonClick = function($event, form) {
+            scope.buttonClick = function ($event, form) {
               if (angular.isFunction(form.onClick)) {
                 form.onClick($event, form);
               } else if (angular.isString(form.onClick)) {
                 if (sfSchema) {
-                  //evaluating in scope outside of sfSchemas isolated scope
+                  // evaluating in scope outside of sfSchemas isolated scope
                   sfSchema.evalInParentScope(form.onClick, {'$event': $event, form: form});
                 } else {
                   scope.$eval(form.onClick, {'$event': $event, form: form});
@@ -71,9 +70,9 @@ angular.module('schemaForm').directive('old-sfField',
              * @param {Object} locals (optional)
              * @return {Any} the result of the expression
              */
-            scope.evalExpr = function(expression, locals) {
+            scope.evalExpr = function (expression, locals) {
               if (sfSchema) {
-                //evaluating in scope outside of sfSchemas isolated scope
+                // evaluating in scope outside of sfSchemas isolated scope
                 return sfSchema.evalInParentScope(expression, locals);
               }
 
@@ -87,7 +86,7 @@ angular.module('schemaForm').directive('old-sfField',
              * @param {Object} locals (optional)
              * @return {Any} the result of the expression
              */
-            scope.evalInScope = function(expression, locals) {
+            scope.evalInScope = function (expression, locals) {
               if (expression) {
                 return scope.$eval(expression, locals);
               }
@@ -107,12 +106,12 @@ angular.module('schemaForm').directive('old-sfField',
              *                         `expression` string.
              * @return {Any} The result of the expression or `undefined`.
              */
-            scope.interp = function(expression, locals) {
+            scope.interp = function (expression, locals) {
               return (expression && $interpolate(expression)(locals));
             };
 
-            //This works since we get the ngModel from the array or the schema-validate directive.
-            scope.hasSuccess = function() {
+            // This works since we get the ngModel from the array or the schema-validate directive.
+            scope.hasSuccess = function () {
               if (!scope.ngModel) {
                 return false;
               }
@@ -126,7 +125,7 @@ angular.module('schemaForm').directive('old-sfField',
               }
             };
 
-            scope.hasError = function() {
+            scope.hasError = function () {
               if (!scope.ngModel) {
                 return false;
               }
@@ -148,7 +147,7 @@ angular.module('schemaForm').directive('old-sfField',
              * An error can either be a schema validation message or a angular js validtion
              * error (i.e. required)
              */
-            scope.errorMessage = function(schemaError) {
+            scope.errorMessage = function (schemaError) {
               return sfErrorMessage.interpolate(
                 (schemaError && schemaError.code + '') || 'default',
                 (scope.ngModel && scope.ngModel.$modelValue) || '',
@@ -165,8 +164,7 @@ angular.module('schemaForm').directive('old-sfField',
               // It looks better with dot notation.
               scope.$on(
                 'schemaForm.error.' + form.key.join('.'),
-                function(event, error, validationMessage, validity, formName) {
-
+                function (event, error, validationMessage, validity, formName) {
                   console.log('field.js triggered!');
 
                   // validationMessage and validity are mutually exclusive
@@ -178,7 +176,7 @@ angular.module('schemaForm').directive('old-sfField',
 
                   // If we have specified a form name, and this model is not within
                   // that form, then leave things be.
-                  if(formName != undefined && scope.ngModel.$$parentForm.$name !== formName) {
+                  if (formName != undefined && scope.ngModel.$$parentForm.$name !== formName) {
                     return;
                   }
 
@@ -217,14 +215,13 @@ angular.module('schemaForm').directive('old-sfField',
               // Clean up the model when the corresponding form field is $destroy-ed.
               // Default behavior can be supplied as a globalOption, and behavior can be overridden
               // in the form definition.
-              scope.$on('$destroy', function() {
+              scope.$on('$destroy', function () {
                 // If the entire schema form is destroyed we don't touch the model
                 if (!scope.externalDestructionInProgress) {
                   var destroyStrategy = form.destroyStrategy ||
                                         (scope.options && scope.options.destroyStrategy) || 'remove';
                   // No key no model, and we might have strategy 'retain'
                   if (form.key && destroyStrategy !== 'retain') {
-
                     // Get the object that has the property we wan't to clear.
                     var obj = scope.model;
                     if (form.key.length > 1) {
@@ -240,7 +237,7 @@ angular.module('schemaForm').directive('old-sfField',
                     var type = (form.schema && form.schema.type) || '';
 
                     // Empty means '',{} and [] for appropriate types and undefined for the rest
-                    //console.log('destroy', destroyStrategy, form.key, type, obj);
+                    // console.log('destroy', destroyStrategy, form.key, type, obj);
                     if (destroyStrategy === 'empty' && type.indexOf('string') !== -1) {
                       obj[form.key.slice(-1)] = '';
                     } else if (destroyStrategy === 'empty' && type.indexOf('object') !== -1) {

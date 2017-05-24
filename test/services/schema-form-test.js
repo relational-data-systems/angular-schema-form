@@ -1,45 +1,45 @@
 chai.should();
 
-describe('schemaForm', function() {
+describe('schemaForm', function () {
   beforeEach(module('schemaForm'));
 
-  describe('#defaults()', function() {
-    it('should generate default form def from a schema',function(){
-      inject(function(schemaForm){
+  describe('#defaults()', function () {
+    it('should generate default form def from a schema', function () {
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "gender": {
-              "title": "Choose",
-              "type": "string",
-              "enum": [
-                "undefined",
-                "null",
-                "NaN",
+            'gender': {
+              'title': 'Choose',
+              'type': 'string',
+              'enum': [
+                'undefined',
+                'null',
+                'NaN'
               ]
             },
-            "overEighteen": {
-              "title": "Are you over 18 years old?",
-              "type": "boolean",
-              "default": false
+            'overEighteen': {
+              'title': 'Are you over 18 years old?',
+              'type': 'boolean',
+              'default': false
             },
-            "attributes": {
-              "type": "object",
-              "required": ['eyecolor'],
-              "properties": {
-                "eyecolor": { "type": "string", "title": "Eye color" },
-                "haircolor": { "type": "string", "title": "Hair color" },
-                "shoulders": {
-                  "type": "object",
-                  "title": "Shoulders",
-                  "properties": {
-                    "left": { "type": "string" },
-                    "right": { "type": "string" },
+            'attributes': {
+              'type': 'object',
+              'required': ['eyecolor'],
+              'properties': {
+                'eyecolor': { 'type': 'string', 'title': 'Eye color' },
+                'haircolor': { 'type': 'string', 'title': 'Hair color' },
+                'shoulders': {
+                  'type': 'object',
+                  'title': 'Shoulders',
+                  'properties': {
+                    'left': { 'type': 'string' },
+                    'right': { 'type': 'string' }
                   }
                 }
               }
@@ -49,172 +49,172 @@ describe('schemaForm', function() {
 
         var form = [
           {
-            "title": "Name",
-            "description": "Gimme yea name lad",
-            "schema": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+            'title': 'Name',
+            'description': 'Gimme yea name lad',
+            'schema': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "ngModelOptions": {},
-            "key": [
-              "name"
+            'ngModelOptions': {},
+            'key': [
+              'name'
             ],
-            "type": "text"
+            'type': 'text'
           },
           {
-            "title": "Choose",
-            "schema": {
-              "title": "Choose",
-              "type": "string",
-              "enum": [
-                "undefined",
-                "null",
-                "NaN"
+            'title': 'Choose',
+            'schema': {
+              'title': 'Choose',
+              'type': 'string',
+              'enum': [
+                'undefined',
+                'null',
+                'NaN'
               ]
             },
-            "ngModelOptions": {},
-            "key": [
-              "gender"
+            'ngModelOptions': {},
+            'key': [
+              'gender'
             ],
-            "type": "select",
-            "titleMap": [
+            'type': 'select',
+            'titleMap': [
               {
-                "name": "undefined",
-                "value": "undefined"
+                'name': 'undefined',
+                'value': 'undefined'
               },
               {
-                "name": "null",
-                "value": "null"
+                'name': 'null',
+                'value': 'null'
               },
               {
-                "name": "NaN",
-                "value": "NaN"
+                'name': 'NaN',
+                'value': 'NaN'
               }
             ]
           },
           {
-            "title": "Are you over 18 years old?",
-            "schema": {
-              "title": "Are you over 18 years old?",
-              "type": "boolean",
-              "default": false
+            'title': 'Are you over 18 years old?',
+            'schema': {
+              'title': 'Are you over 18 years old?',
+              'type': 'boolean',
+              'default': false
             },
-            "ngModelOptions": {},
-            "key": [
-              "overEighteen"
+            'ngModelOptions': {},
+            'key': [
+              'overEighteen'
             ],
-            "type": "checkbox"
+            'type': 'checkbox'
           },
           {
-            "title": "attributes",
-            "schema": {
-              "type": "object",
-              "required": [
-                "eyecolor"
+            'title': 'attributes',
+            'schema': {
+              'type': 'object',
+              'required': [
+                'eyecolor'
               ],
-              "properties": {
-                "eyecolor": {
-                  "type": "string",
-                  "title": "Eye color"
+              'properties': {
+                'eyecolor': {
+                  'type': 'string',
+                  'title': 'Eye color'
                 },
-                "haircolor": {
-                  "type": "string",
-                  "title": "Hair color"
+                'haircolor': {
+                  'type': 'string',
+                  'title': 'Hair color'
                 },
-                "shoulders": {
-                  "type": "object",
-                  "title": "Shoulders",
-                  "properties": {
-                    "left": {
-                      "type": "string"
+                'shoulders': {
+                  'type': 'object',
+                  'title': 'Shoulders',
+                  'properties': {
+                    'left': {
+                      'type': 'string'
                     },
-                    "right": {
-                      "type": "string"
+                    'right': {
+                      'type': 'string'
                     }
                   }
                 }
               }
             },
-            "ngModelOptions": {},
-            "type": "fieldset",
-            "key": [
-              "attributes"
+            'ngModelOptions': {},
+            'type': 'fieldset',
+            'key': [
+              'attributes'
             ],
-            "items": [
+            'items': [
               {
-                "title": "Eye color",
-                "required": true,
-                "schema": {
-                  "type": "string",
-                  "title": "Eye color"
+                'title': 'Eye color',
+                'required': true,
+                'schema': {
+                  'type': 'string',
+                  'title': 'Eye color'
                 },
-                "ngModelOptions": {},
-                "key": [
-                  "attributes",
-                  "eyecolor"
+                'ngModelOptions': {},
+                'key': [
+                  'attributes',
+                  'eyecolor'
                 ],
-                "type": "text"
+                'type': 'text'
               },
               {
-                "title": "Hair color",
-                "schema": {
-                  "type": "string",
-                  "title": "Hair color"
+                'title': 'Hair color',
+                'schema': {
+                  'type': 'string',
+                  'title': 'Hair color'
                 },
-                "ngModelOptions": {},
-                "key": [
-                  "attributes",
-                  "haircolor"
+                'ngModelOptions': {},
+                'key': [
+                  'attributes',
+                  'haircolor'
                 ],
-                "type": "text"
+                'type': 'text'
               },
               {
-                "title": "Shoulders",
-                "schema": {
-                  "type": "object",
-                  "title": "Shoulders",
-                  "properties": {
-                    "left": {
-                      "type": "string"
+                'title': 'Shoulders',
+                'schema': {
+                  'type': 'object',
+                  'title': 'Shoulders',
+                  'properties': {
+                    'left': {
+                      'type': 'string'
                     },
-                    "right": {
-                      "type": "string"
+                    'right': {
+                      'type': 'string'
                     }
                   }
                 },
-                "ngModelOptions": {},
-                "type": "fieldset",
-                "key": [
-                  "attributes",
-                  "shoulders"
+                'ngModelOptions': {},
+                'type': 'fieldset',
+                'key': [
+                  'attributes',
+                  'shoulders'
                 ],
-                "items": [
+                'items': [
                   {
-                    "title": "left",
-                    "schema": {
-                      "type": "string"
+                    'title': 'left',
+                    'schema': {
+                      'type': 'string'
                     },
-                    "ngModelOptions": {},
-                    "key": [
-                      "attributes",
-                      "shoulders",
-                      "left"
+                    'ngModelOptions': {},
+                    'key': [
+                      'attributes',
+                      'shoulders',
+                      'left'
                     ],
-                    "type": "text"
+                    'type': 'text'
                   },
                   {
-                    "title": "right",
-                    "schema": {
-                      "type": "string"
+                    'title': 'right',
+                    'schema': {
+                      'type': 'string'
                     },
-                    "ngModelOptions": {},
-                    "key": [
-                      "attributes",
-                      "shoulders",
-                      "right"
+                    'ngModelOptions': {},
+                    'key': [
+                      'attributes',
+                      'shoulders',
+                      'right'
                     ],
-                    "type": "text"
+                    'type': 'text'
                   }
                 ]
               }
@@ -227,242 +227,231 @@ describe('schemaForm', function() {
       });
     });
 
-    it('should handle global defaults',function(){
-      inject(function(schemaForm){
-
+    it('should handle global defaults', function () {
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             }
           }
         };
 
         var form = [
           {
-            "title": "Name",
-            "description": "Gimme yea name lad",
-            "schema": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+            'title': 'Name',
+            'description': 'Gimme yea name lad',
+            'schema': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "ngModelOptions": { "updateOn": "blur"},
-            "foo": "bar",
-            "key": [
-              "name"
+            'ngModelOptions': { 'updateOn': 'blur'},
+            'foo': 'bar',
+            'key': [
+              'name'
             ],
-            "type": "text"
+            'type': 'text'
           }
         ];
 
-        var f = schemaForm.defaults(schema,{},{ formDefaults: { foo: "bar", ngModelOptions: { updateOn: 'blur' }}});
+        var f = schemaForm.defaults(schema, {}, { formDefaults: { foo: 'bar', ngModelOptions: { updateOn: 'blur' }}});
         f.form.should.be.deep.equal(form);
       });
     });
 
-    it('should handle x-schema-form defaults',function(){
-      inject(function(schemaForm){
-
+    it('should handle x-schema-form defaults', function () {
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string",
-              "x-schema-form": {
-                "type": "textarea"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string',
+              'x-schema-form': {
+                'type': 'textarea'
               }
             }
           }
         };
 
-
-
-        var f = schemaForm.defaults(schema,{});
+        var f = schemaForm.defaults(schema, {});
         f.form[0].type.should.be.eq('textarea');
       });
     });
 
-    it('should ignore parts of schema in ignore list',function(){
-      inject(function(schemaForm){
-
+    it('should ignore parts of schema in ignore list', function () {
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "gender": {
-              "title": "Choose",
-              "type": "string",
-              "enum": [
-                "undefined",
-                "null",
-                "NaN",
+            'gender': {
+              'title': 'Choose',
+              'type': 'string',
+              'enum': [
+                'undefined',
+                'null',
+                'NaN'
               ]
             }
           }
         };
 
-        //no form is implicitly ['*']
+        // no form is implicitly ['*']
         var defaults = schemaForm.defaults(schema).form;
-        schemaForm.merge(schema,["*"],{gender:true}).should.be.deep.equal([defaults[0]]);
+        schemaForm.merge(schema, ['*'], {gender: true}).should.be.deep.equal([defaults[0]]);
       });
     });
   });
 
-  describe('#appendRule() and #prependRule()', function() {
-    it('should extend with new defaults',function(){
-      module(function(schemaFormProvider){
-        schemaFormProvider.prependRule('string',function(name,schema,options){
+  describe('#appendRule() and #prependRule()', function () {
+    it('should extend with new defaults', function () {
+      module(function (schemaFormProvider) {
+        schemaFormProvider.prependRule('string', function (name, schema, options) {
           if (schema.format === 'foobar') {
-            var f = schemaFormProvider.createStandardForm(name,schema,options);
+            var f = schemaFormProvider.createStandardForm(name, schema, options);
             f.type = 'foobar';
             return f;
           }
         });
 
-        schemaFormProvider.appendRule('string',function(name,schema,options){
-          var f = schemaFormProvider.createStandardForm(name,schema,options);
+        schemaFormProvider.appendRule('string', function (name, schema, options) {
+          var f = schemaFormProvider.createStandardForm(name, schema, options);
           f.type = 'notused';
           return f;
         });
       });
 
-      inject(function(schemaForm){
-
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "format": "foobar",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'format': 'foobar',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "gender": {
-              "title": "Choose",
-              "type": "string",
-              "enum": [
-                "undefined",
-                "null",
-                "NaN",
+            'gender': {
+              'title': 'Choose',
+              'type': 'string',
+              'enum': [
+                'undefined',
+                'null',
+                'NaN'
               ]
             }
           }
         };
 
-        //no form is implicitly ['*']
+        // no form is implicitly ['*']
         var defaults = schemaForm.defaults(schema).form;
         defaults[0].type.should.be.equal('foobar');
         defaults[0].title.should.be.equal('Name');
         defaults[1].type.should.be.equal('select');
         defaults[1].title.should.be.equal('Choose');
-
       });
     });
   });
 
-  describe('#postProcess()', function() {
-    it('should be enable post-processing of forms',function(){
-      module(function(schemaFormProvider){
-        schemaFormProvider.postProcess(function(form){
+  describe('#postProcess()', function () {
+    it('should be enable post-processing of forms', function () {
+      module(function (schemaFormProvider) {
+        schemaFormProvider.postProcess(function (form) {
           form.postProcess = true;
           form.length.should.be.eq(1);
           form[0].title.should.be.eq('Name');
           return form;
         });
-
       });
 
-      inject(function(schemaForm){
-
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "format": "foobar",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'format': 'foobar',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             }
           }
         };
 
-        var form = schemaForm.merge(schema,["name"]);
+        var form = schemaForm.merge(schema, ['name']);
         form.postProcess.should.be.true;
-
       });
     });
   });
 
-  describe('#merge()', function() {
-    it('should merge schema and form def',function(){
-      inject(function(schemaForm){
+  describe('#merge()', function () {
+    it('should merge schema and form def', function () {
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "gender": {
-              "title": "Choose",
-              "type": "string",
-              "enum": [
-                "undefined",
-                "null",
-                "NaN",
+            'gender': {
+              'title': 'Choose',
+              'type': 'string',
+              'enum': [
+                'undefined',
+                'null',
+                'NaN'
               ]
             }
           }
         };
 
-        //no form is implicitly ['*']
+        // no form is implicitly ['*']
         var defaults = schemaForm.defaults(schema).form;
         schemaForm.merge(schema).should.be.deep.equal(defaults);
-        schemaForm.merge(schema,['*']).should.be.deep.equal(defaults);
-        schemaForm.merge(schema,['*',{type:'fieldset'}]).should.be.deep.equal(defaults.concat([{type:'fieldset'}]));
+        schemaForm.merge(schema, ['*']).should.be.deep.equal(defaults);
+        schemaForm.merge(schema, ['*', {type: 'fieldset'}]).should.be.deep.equal(defaults.concat([{type: 'fieldset'}]));
 
-        //simple form
-        schemaForm.merge(schema,['gender']).should.be.deep.equal([defaults[1]]);
-        schemaForm.merge(schema,['gender','name']).should.be.deep.equal([defaults[1],defaults[0]]);
+        // simple form
+        schemaForm.merge(schema, ['gender']).should.be.deep.equal([defaults[1]]);
+        schemaForm.merge(schema, ['gender', 'name']).should.be.deep.equal([defaults[1], defaults[0]]);
 
-        //change it up
+        // change it up
         var f = angular.copy(defaults[0]);
         f.title = 'Foobar';
-        f.type  = 'password';
-        schemaForm.merge(schema,[{ key: 'name',title: 'Foobar',type: 'password'}]).should.be.deep.equal([f]);
-
+        f.type = 'password';
+        schemaForm.merge(schema, [{ key: 'name', title: 'Foobar', type: 'password'}]).should.be.deep.equal([f]);
       });
     });
 
-    it('should translate "readOnly" in schema to "readonly" on the merged form defintion',function(){
-      inject(function(schemaForm){
+    it('should translate "readOnly" in schema to "readonly" on the merged form defintion', function () {
+      inject(function (schemaForm) {
         var schema = {
-          "type": "object",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Gimme yea name lad",
-              "type": "string"
+          'type': 'object',
+          'properties': {
+            'name': {
+              'title': 'Name',
+              'description': 'Gimme yea name lad',
+              'type': 'string'
             },
-            "gender": {
-              "readOnly": true,
-              "title": "Choose",
-              "type": "string",
-              "enum": [
-                "undefined",
-                "null",
-                "NaN",
+            'gender': {
+              'readOnly': true,
+              'title': 'Choose',
+              'type': 'string',
+              'enum': [
+                'undefined',
+                'null',
+                'NaN'
               ]
             }
           }
@@ -470,12 +459,12 @@ describe('schemaForm', function() {
 
         var merged = schemaForm.merge(schema, ['gender']);
         merged[0].should.have.property('readonly');
-        merged[0].readonly.should.eq(true)
+        merged[0].readonly.should.eq(true);
       });
     });
 
-    it('should push readOnly in schema down into objects and arrays', function() {
-      inject(function(schemaForm) {
+    it('should push readOnly in schema down into objects and arrays', function () {
+      inject(function (schemaForm) {
         var schema = {
           'type': 'object',
           'readOnly': true,
@@ -501,23 +490,22 @@ describe('schemaForm', function() {
 
         var merged = schemaForm.merge(schema, ['*']);
 
-        //sub
+        // sub
         merged[0].should.have.property('readonly');
         merged[0].readonly.should.eq(true);
 
-        //array
+        // array
         merged[0].items[0].should.have.property('readonly');
         merged[0].items[0].readonly.should.eq(true);
 
-        //array items
+        // array items
         merged[0].items[0].items[0].should.have.property('readonly');
         merged[0].items[0].items[0].readonly.should.eq(true);
-
       });
     });
 
-    it('should push readonly in form def down into objects and arrays', function() {
-      inject(function(schemaForm) {
+    it('should push readonly in form def down into objects and arrays', function () {
+      inject(function (schemaForm) {
         var schema = {
           'type': 'object',
           'properties': {
@@ -542,18 +530,17 @@ describe('schemaForm', function() {
 
         var merged = schemaForm.merge(schema, [{key: 'sub', readonly: true}]);
 
-        //sub
+        // sub
         merged[0].should.have.property('readonly');
         merged[0].readonly.should.eq(true);
 
-        //array
+        // array
         merged[0].items[0].should.have.property('readonly');
         merged[0].items[0].readonly.should.eq(true);
 
-        //array items
+        // array items
         merged[0].items[0].items[0].should.have.property('readonly');
         merged[0].items[0].items[0].readonly.should.eq(true);
-
       });
     });
   });

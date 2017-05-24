@@ -1,49 +1,44 @@
 chai.should();
 
-describe('schemaFormServices', function() {
+describe('schemaFormServices', function () {
   beforeEach(module('schemaForm'));
 
-  describe('#sfErrorMessage', function() {
-    it('should fall back to global default message if no other is supplied', function() {
-      inject(function(sfErrorMessage) {
-
+  describe('#sfErrorMessage', function () {
+    it('should fall back to global default message if no other is supplied', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
-          {schema: {title: 'Foo'}},   //form
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
+          {schema: {title: 'Foo'}},   // form
           {'default': 'Oh noes!'}
         );
 
         result.should.be.eq('Oh noes!');
-
       });
     });
 
-    it('should use form definition default message if no other is supplied', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should use form definition default message if no other is supplied', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
-          {validationMessage: {'default': 'Oh yes!'}, schema: {title: 'Foo'}},   //form
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
+          {validationMessage: {'default': 'Oh yes!'}, schema: {title: 'Foo'}},   // form
           {'default': 'Oh noes!'}
         );
 
         result.should.be.eq('Oh yes!');
-
       });
     });
 
-    it('should use the matching error from global validationMessage', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should use the matching error from global validationMessage', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
-          {schema: {title: 'Foo'}},   //form
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
+          {schema: {title: 'Foo'}},   // form
           {'default': 'Oh noes!', 'foobar-error': 'Aw chucks!'}
         );
 
@@ -51,14 +46,13 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should use the matching error from form validationMessage', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should use the matching error from form validationMessage', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
-          {schema: {title: 'Foo'}, validationMessage: {'foobar-error': 'Noooooo!'}},   //form
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
+          {schema: {title: 'Foo'}, validationMessage: {'foobar-error': 'Noooooo!'}},   // form
           {'default': 'Oh noes!', 'foobar-error': 'Aw chucks!'}
         );
 
@@ -66,19 +60,18 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should interpolate messages', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should interpolate messages', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
           {
             schema: {title: 'Foo'},
             validationMessage: {
               'foobar-error': 'Noooooo! "{{title}}" should not be "{{value}}"'
             }
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
@@ -86,35 +79,34 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should interpolate title in messages to either form or schema title', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should interpolate title in messages to either form or schema title', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
           {
             schema: {title: 'Foo'},
             validationMessage: {
               'foobar-error': '{{title}}'
             }
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
         result.should.be.eq('Foo');
 
         result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
           {
             title: 'Bar',
             schema: {title: 'Foo'},
             validationMessage: {
               'foobar-error': '{{title}}'
             }
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
@@ -122,17 +114,16 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should handle valdationMessage set to just a string', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should handle valdationMessage set to just a string', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
           {
             schema: {title: 'Foo'},
             validationMessage: 'Huh?'
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
@@ -140,21 +131,20 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should handle valdationMessages being functions', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should handle valdationMessages being functions', function () {
+      inject(function (sfErrorMessage) {
         var msgFn = sinon.stub().returns('Yes!');
 
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
           {
             schema: {title: 'Foo'},
             validationMessage: {
               'foobar-error': msgFn
             }
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
@@ -176,19 +166,18 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should handle valdationMessage being a single function', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should handle valdationMessage being a single function', function () {
+      inject(function (sfErrorMessage) {
         var msgFn = sinon.stub().returns('Yes!');
 
         var result = sfErrorMessage.interpolate(
-          'foobar-error',              //error
-          'foobar',                    //value
-          'foobar',               //view value
+          'foobar-error',              // error
+          'foobar',                    // value
+          'foobar',               // view value
           {
             schema: {title: 'Foo'},
             validationMessage: msgFn
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
@@ -208,23 +197,21 @@ describe('schemaFormServices', function() {
       });
     });
 
-    it('should strip "tv4-" prefix from error code', function() {
-      inject(function(sfErrorMessage) {
-
+    it('should strip "tv4-" prefix from error code', function () {
+      inject(function (sfErrorMessage) {
         var result = sfErrorMessage.interpolate(
-          'tv4-302',              //error
-          'foobar',               //value
-          'foobar',               //view value
+          'tv4-302',              // error
+          'foobar',               // value
+          'foobar',               // view value
           {
             schema: {title: 'Foo'},
             validationMessage: {302: 'tv4 error!'}
-          },   //form
+          },   // form
           {'default': 'Oh noes!'}
         );
 
         result.should.be.eq('tv4 error!');
       });
     });
-
   });
 });

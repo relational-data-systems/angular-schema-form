@@ -1,5 +1,4 @@
-angular.module('schemaForm').provider('sfErrorMessage', function() {
-
+angular.module('schemaForm').provider('sfErrorMessage', function () {
   // The codes are tv4 error codes.
   // Not all of these can actually happen in a field, but for
   // we never know when one might pop up so it's best to cover them all.
@@ -45,33 +44,32 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
   };
 
   // In some cases we get hit with an angular validation error
-  defaultMessages.number    = defaultMessages[105];
-  defaultMessages.required  = defaultMessages[302];
-  defaultMessages.min       = defaultMessages[101];
-  defaultMessages.max       = defaultMessages[103];
+  defaultMessages.number = defaultMessages[105];
+  defaultMessages.required = defaultMessages[302];
+  defaultMessages.min = defaultMessages[101];
+  defaultMessages.max = defaultMessages[103];
   defaultMessages.maxlength = defaultMessages[201];
   defaultMessages.minlength = defaultMessages[200];
-  defaultMessages.pattern   = defaultMessages[202];
+  defaultMessages.pattern = defaultMessages[202];
 
   // kelin: Needs these to be compatible with Ajv
   defaultMessages.maxLength = defaultMessages.maxlength;
   defaultMessages.minLength = defaultMessages.minlength;
-  defaultMessages.type   = 'Incorrect data type, {{schema.type}} expected';
+  defaultMessages.type = 'Incorrect data type, {{schema.type}} expected';
 
-  this.setDefaultMessages = function(messages) {
+  this.setDefaultMessages = function (messages) {
     defaultMessages = messages;
   };
 
-  this.getDefaultMessages = function() {
+  this.getDefaultMessages = function () {
     return defaultMessages;
   };
 
-  this.setDefaultMessage = function(error, msg) {
+  this.setDefaultMessage = function (error, msg) {
     defaultMessages[error] = msg;
   };
 
-  this.$get = ['$interpolate', function($interpolate) {
-
+  this.$get = ['$interpolate', function ($interpolate) {
     var service = {};
     service.defaultMessages = defaultMessages;
 
@@ -88,7 +86,7 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
      *                         its actually just shared in one instance of sf-schema)
      * @return {string} The error message.
      */
-    service.interpolate = function(error, value, viewValue, form, global) {
+    service.interpolate = function (error, value, viewValue, form, global) {
       global = global || {};
       var validationMessage = form.validationMessage || {};
 
@@ -100,7 +98,7 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
       // First find apropriate message or function
       var message = validationMessage['default'] || global['default'] || '';
 
-      [validationMessage, global, defaultMessages].some(function(val) {
+      [validationMessage, global, defaultMessages].some(function (val) {
         if (angular.isString(val) || angular.isFunction(val)) {
           message = val;
           return true;
@@ -128,5 +126,4 @@ angular.module('schemaForm').provider('sfErrorMessage', function() {
 
     return service;
   }];
-
 });
