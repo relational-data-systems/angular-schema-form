@@ -3141,8 +3141,8 @@ angular.module('schemaForm')
     }
   ]);
 
-angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse', 'sfSelect',
-  function (sfValidator, $parse, sfSelect) {
+angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse', 'sfSelect', '$timeout',
+  function (sfValidator, $parse, sfSelect, $timeout) {
     return {
       restrict: 'A',
       scope: false,
@@ -3205,6 +3205,12 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // Angular 1.2 on the other hand lacks $validators and don't add a 'parse' error.
             return undefined;
           } else {
+            if (error !== null) {
+              $timeout(function () {
+                scope.$emit('internal-schemaFormValidate-revalidate-containing-array-if-any');
+              });
+            }
+            error = null;
             if (form.jsExpressionResult === false) {
               ngModel.$setValidity('jsExpression', false);
               error = {'code': 'jsExpression'};
@@ -3326,7 +3332,15 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           scope.validateField(formName);
         });
 
+        scope.$on('internal-schemaFormValidate-revalidate-containing-array-if-any', function (event) {
+          if (scope.form && scope.form.type === 'array') {
+            scope.validateField();
+            ngModel.$validate(); // To refresh the values of ngModel.$valid and ngModel.$invalid
+          }
+        });
+
         scope.schemaError = function () {
+          console.log(scope);
           return error;
         };
       }
