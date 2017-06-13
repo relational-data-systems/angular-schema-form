@@ -197,7 +197,6 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
         });
 
         scope.schemaError = function () {
-          console.log(scope);
           return error;
         };
       }
