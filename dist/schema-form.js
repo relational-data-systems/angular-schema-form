@@ -1954,6 +1954,11 @@ angular.module('schemaForm').factory('sfValidator', [function () {
       // the validation to fail. So we will simple remove the properties with these values
       value = angular.copy(value);
       recResetNullValues(value);
+
+      // Skip the validation for the content of array child items, i.e., only validate the
+      // array itself
+      schema = angular.copy(form.schema);
+      delete schema.items;
     }
 
     // Numbers fields will give a null value, which also means empty field
