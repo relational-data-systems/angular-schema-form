@@ -262,11 +262,12 @@ angular.module('schemaForm').directive('sfField',
                   var destroyStrategy = form.destroyStrategy ||
                     (scope.options && scope.options.destroyStrategy) || 'remove';
                   // No key no model, and we might have strategy 'retain'
-                  if (form.key && destroyStrategy !== 'retain') {
+                  var modelKey = scope.getModelPath();
+                  if (modelKey && destroyStrategy !== 'retain') {
                     // Get the object that has the property we wan't to clear.
                     var obj = scope.model;
-                    if (form.key.length > 1) {
-                      obj = sfSelect(form.key.slice(0, form.key.length - 1), obj);
+                    if (modelKey.length > 1) {
+                      obj = sfSelect(modelKey.slice(0, modelKey.length - 1), obj);
                     }
 
                     // We can get undefined here if the form hasn't been filled out entirely
@@ -278,17 +279,17 @@ angular.module('schemaForm').directive('sfField',
                     var type = (form.schema && form.schema.type) || '';
 
                     // Empty means '',{} and [] for appropriate types and undefined for the rest
-                    // console.log('destroy', destroyStrategy, form.key, type, obj);
+                    // console.log('destroy', destroyStrategy, modelKey, type, obj);
                     if (destroyStrategy === 'empty' && type.indexOf('string') !== -1) {
-                      obj[form.key.slice(-1)] = '';
+                      obj[modelKey.slice(-1)] = '';
                     } else if (destroyStrategy === 'empty' && type.indexOf('object') !== -1) {
-                      obj[form.key.slice(-1)] = {};
+                      obj[modelKey.slice(-1)] = {};
                     } else if (destroyStrategy === 'empty' && type.indexOf('array') !== -1) {
-                      obj[form.key.slice(-1)] = [];
+                      obj[modelKey.slice(-1)] = [];
                     } else if (destroyStrategy === 'null') {
-                      obj[form.key.slice(-1)] = null;
+                      obj[modelKey.slice(-1)] = null;
                     } else {
-                      delete obj[form.key.slice(-1)];
+                      delete obj[modelKey.slice(-1)];
                     }
                   }
                 }
