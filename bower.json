@@ -52,6 +52,7 @@
     "angular-mocks": "^1.6.4",
     "tx-tinymce": ">=0.0.5",
     "angular-ui-sortable": ">=0.12.11",
+    "bootstrap": "^3.3.7",
     "bootstrap-vertical-tabs": "~1.2.0"
   }
 }
