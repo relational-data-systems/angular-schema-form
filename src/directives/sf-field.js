@@ -297,6 +297,9 @@ angular.module('schemaForm').directive('sfField',
             }
 
             if (form.derivedFrom) {
+              //if value is derived, then it should not be editable, so set readonly. This is only display logic, so do not update schema
+              form.readonly = true;
+              
               var model = scope.model;
               var derivedFrom = form.derivedFrom;
 
