@@ -57,6 +57,18 @@ angular.module('schemaForm').provider('sfErrorMessage', function () {
   defaultMessages.minLength = defaultMessages.minlength;
   defaultMessages.type = 'Incorrect data type, {{schema.type}} expected';
 
+  var errorCode2FieldMap = {
+    '105': 'number',
+    '302': 'required',
+    '101': 'min',
+    '103': 'max',
+    '201': 'maxLength',
+    '200': 'minLength',
+    '202': 'pattern',
+    'minlength': 'minLength',
+    'maxlength': 'maxLength'
+  };
+
   this.setDefaultMessages = function (messages) {
     defaultMessages = messages;
   };
@@ -94,6 +106,8 @@ angular.module('schemaForm').provider('sfErrorMessage', function () {
       if (error.indexOf('tv4-') === 0) {
         error = error.substring(4);
       }
+
+      error = errorCode2FieldMap[error] || error;
 
       // First find apropriate message or function
       var message = validationMessage['default'] || global['default'] || '';
