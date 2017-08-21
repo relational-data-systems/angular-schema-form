@@ -46,25 +46,25 @@ angular.module('schemaForm').provider('sfErrorMessage', function () {
   // In some cases we get hit with an angular validation error
   defaultMessages.number = defaultMessages[105];
   defaultMessages.required = defaultMessages[302];
-  defaultMessages.min = defaultMessages[101];
-  defaultMessages.max = defaultMessages[103];
-  defaultMessages.maxlength = defaultMessages[201];
+  defaultMessages.minimum = defaultMessages[101];
+  defaultMessages.maximum = defaultMessages[103];
   defaultMessages.minlength = defaultMessages[200];
+  defaultMessages.maxlength = defaultMessages[201];
   defaultMessages.pattern = defaultMessages[202];
 
   // kelin: Needs these to be compatible with Ajv
-  defaultMessages.maxLength = defaultMessages.maxlength;
   defaultMessages.minLength = defaultMessages.minlength;
+  defaultMessages.maxLength = defaultMessages.maxlength;
   defaultMessages.type = 'Incorrect data type, {{schema.type}} expected';
 
   var errorCode2FieldMap = {
+    '101': 'minimum',
+    '103': 'maximum',
     '105': 'number',
-    '302': 'required',
-    '101': 'min',
-    '103': 'max',
     '201': 'maxLength',
     '200': 'minLength',
     '202': 'pattern',
+    '302': 'required',
     'minlength': 'minLength',
     'maxlength': 'maxLength'
   };
