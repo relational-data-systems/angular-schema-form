@@ -1995,6 +1995,12 @@ angular.module('schemaForm').factory('sfValidator', [function () {
       }
     }
 
+    if (['rds-multi-select', 'rds-dynamic-multi-select', 'checkboxes', 'rds-dynamic-checkboxes']) {
+      if (angular.equals(value, [])) {
+        value = undefined;
+      }
+    }
+
     // Version 4 of JSON Schema has the required property not on the
     // property itself but on the wrapping object. Since we like to test
     // only this property we wrap it in a fake object.
@@ -3085,7 +3091,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             first = false; // added with fix
             return val;
           }
-          validate(ngModel.$modelValue);
+          if (!ngModel.$pristine) {
+            validate(ngModel.$modelValue);
+          }
           return val;
         });
 

@@ -180,7 +180,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             first = false; // added with fix
             return val;
           }
-          validate(ngModel.$modelValue);
+          if (!ngModel.$pristine) {
+            validate(ngModel.$modelValue);
+          }
           return val;
         });
 
