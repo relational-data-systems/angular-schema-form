@@ -25,8 +25,82 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           });
         }
 
+        // Custom validators, parsers, formatters etc
+        if (typeof form.ngModel === 'function') {
+          form.ngModel(ngModel);
+        }
+
+        ['$parsers', '$viewChangeListeners', '$formatters'].forEach(function (attr) {
+          if (form[attr] && ngModel[attr]) {
+            form[attr].forEach(function (fn) {
+              ngModel[attr].push(fn);
+            });
+          }
+        });
+
+        ['$validators', '$asyncValidators'].forEach(function (attr) {
+          // Check if our version of angular has validators, i.e. 1.3+
+          if (form[attr] && ngModel[attr]) {
+            angular.forEach(form[attr], function (fn, name) {
+              ngModel[attr][name] = fn;
+            });
+          }
+        });
+
+        // Get in last of the parses so the parsed value has the correct type.
+        // We don't use $validators since we like to set different errors depending tv4 error codes
+        ngModel.$parsers.push(_validate);
+
+        // But we do use one custom validator in the case of Angular 1.3 to stop the model from
+        // updating if we've found an error.
+        if (ngModel.$validators) {
+          ngModel.$validators.schemaForm = function () {
+            // console.log('validators called.')
+            // Any error and we're out of here!
+            return !Object.keys(ngModel.$error).some(function (e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation'; });
+          };
+        }
+
+        var schema = form.schema;
+
+        // A bit ugly but useful.
+        scope.validateField = validateField;
+
+        // TODO: This seems like a hack, but it's what is happening on the schemaform demo page? first was previously scope.firstDigest
+        // It solves the problem of forms validating when a condition passes and new fields are shown though
+        var first = true;
+        ngModel.$formatters.push(function (val) {
+          // When a form first loads this will be called for each field.
+          // we usually don't want that.
+          if (ngModel.$pristine && first &&
+              (!scope.options || scope.options.validateOnRender !== true)) {
+            first = false; // added with fix
+            return val;
+          }
+          if (!ngModel.$pristine) {
+            _validate(ngModel.$modelValue);
+          }
+          return val;
+        });
+
+        // Listen to an event so we can validate the input on request
+        scope.$on('schemaFormValidate', function (event, formName) {
+          scope.validateField(formName);
+        });
+
+        scope.$on('internal-schemaFormValidate-revalidate-containing-array-if-any', function (event) {
+          if (scope.form && scope.form.type === 'array') {
+            scope.validateField();
+            ngModel.$validate(); // To refresh the values of ngModel.$valid and ngModel.$invalid
+          }
+        });
+
+        scope.schemaError = function () {
+          return error;
+        };
+
         // Validate against the schema
-        var validate = function (viewValue) {
+        function _validate (viewValue) {
           // Still might be undefined
           if (!form) {
             return viewValue;
@@ -80,48 +154,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
               return viewValue;
             }
           }
-        };
-
-        // Custom validators, parsers, formatters etc
-        if (typeof form.ngModel === 'function') {
-          form.ngModel(ngModel);
         }
 
-        ['$parsers', '$viewChangeListeners', '$formatters'].forEach(function (attr) {
-          if (form[attr] && ngModel[attr]) {
-            form[attr].forEach(function (fn) {
-              ngModel[attr].push(fn);
-            });
-          }
-        });
-
-        ['$validators', '$asyncValidators'].forEach(function (attr) {
-          // Check if our version of angular has validators, i.e. 1.3+
-          if (form[attr] && ngModel[attr]) {
-            angular.forEach(form[attr], function (fn, name) {
-              ngModel[attr][name] = fn;
-            });
-          }
-        });
-
-        // Get in last of the parses so the parsed value has the correct type.
-        // We don't use $validators since we like to set different errors depending tv4 error codes
-        ngModel.$parsers.push(validate);
-
-        // But we do use one custom validator in the case of Angular 1.3 to stop the model from
-        // updating if we've found an error.
-        if (ngModel.$validators) {
-          ngModel.$validators.schemaForm = function () {
-            // console.log('validators called.')
-            // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function (e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation'; });
-          };
-        }
-
-        var schema = form.schema;
-
-        // A bit ugly but useful.
-        scope.validateField = function (formName) {
+        function validateField (formName) {
           // If we have specified a form name, and this model is not within
           // that form, then leave things be.
           if (formName != undefined && ngModel.$$parentForm.$name !== formName) {
@@ -134,7 +169,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           // since it's the same value. This will be better when we drop
           // 1.2 support.
           if (schema && schema.type.indexOf('array') !== -1) {
-            validate(ngModel.$modelValue);
+            _validate(ngModel.$modelValue);
           }
 
           // We set the viewValue to trigger parsers,
@@ -149,14 +184,27 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
             // FIXME: i think this should handle more than one case at a time if we want multiple messages displayed per field?
+            // kelin: this is the messiest code I've ever met in schema form so far... ╮(╯▽╰)╭
             ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
-            if (form.required && ngModel.$isEmpty(ngModel.$modelValue)) {
-              ngModel.$setValidity('tv4-302', false);
-            } else if (form.jsExpressionResult === false) {
+            if (form.required) {
+              if (_isEmptyNgModel()) {
+                ngModel.$setValidity('tv4-302', false);
+                // kelin: Once the validity become false, return immediately. This is what schema form originally does. No bother to change atm
+                return;
+              } else {
+                ngModel.$setValidity('tv4-302', true);
+              }
+            }
+
+            if (form.jsExpressionResult === false) {
               ngModel.$setValidity('jsExpression', false);
+              // kelin: Once the validity become false, return immediately. This is what schema form originally does. No bother to change atm
+              return;
             } else if (form.jsExpressionResult) {
               ngModel.$setValidity('jsExpression', true);
-            } else if (form.remoteValidationResult === false) {
+            }
+
+            if (form.remoteValidationResult === false) {
               ngModel.$setValidity('remoteValidation', false);
             } else if (form.remoteValidationResult) {
               ngModel.$setValidity('remoteValidation', true);
@@ -167,38 +215,12 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // hence required works.
             ngModel.$setViewValue(ngModel.$viewValue);
           }
-        };
 
-        // TODO: This seems like a hack, but it's what is happening on the schemaform demo page? first was previously scope.firstDigest
-        // It solves the problem of forms validating when a condition passes and new fields are shown though
-        var first = true;
-        ngModel.$formatters.push(function (val) {
-          // When a form first loads this will be called for each field.
-          // we usually don't want that.
-          if (ngModel.$pristine && first &&
-              (!scope.options || scope.options.validateOnRender !== true)) {
-            first = false; // added with fix
-            return val;
+          function _isEmptyNgModel () {
+            return ngModel.$isEmpty(ngModel.$modelValue) ||
+              ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []));
           }
-          validate(ngModel.$modelValue);
-          return val;
-        });
-
-        // Listen to an event so we can validate the input on request
-        scope.$on('schemaFormValidate', function (event, formName) {
-          scope.validateField(formName);
-        });
-
-        scope.$on('internal-schemaFormValidate-revalidate-containing-array-if-any', function (event) {
-          if (scope.form && scope.form.type === 'array') {
-            scope.validateField();
-            ngModel.$validate(); // To refresh the values of ngModel.$valid and ngModel.$invalid
-          }
-        });
-
-        scope.schemaError = function () {
-          return error;
-        };
+        }
       }
     };
   }]);

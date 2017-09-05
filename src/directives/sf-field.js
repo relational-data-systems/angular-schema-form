@@ -157,12 +157,19 @@ angular.module('schemaForm').directive('sfField',
               if (scope.options && scope.options.pristine &&
                                 scope.options.pristine.success === false) {
                 return scope.ngModel.$valid &&
-                                    !scope.ngModel.$pristine && !scope.ngModel.$isEmpty(scope.ngModel.$modelValue);
+                                    !scope.ngModel.$pristine && !_isEmptyNgModel();
               } else {
                 return scope.ngModel.$valid &&
-                                    (!scope.ngModel.$pristine || !scope.ngModel.$isEmpty(scope.ngModel.$modelValue));
+                                    (!scope.ngModel.$pristine || !_isEmptyNgModel());
               }
             };
+
+            function _isEmptyNgModel () {
+              var ngModel = scope.ngModel;
+              var schema = scope.form.schema;
+              return ngModel.$isEmpty(ngModel.$modelValue) ||
+                ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []));
+            }
 
             scope.hasError = function () {
               // console.log('sf-field - hasError() called');
@@ -297,9 +304,9 @@ angular.module('schemaForm').directive('sfField',
             }
 
             if (form.derivedFrom) {
-              //if value is derived, then it should not be editable, so set readonly. This is only display logic, so do not update schema
+              // if value is derived, then it should not be editable, so set readonly. This is only display logic, so do not update schema
               form.readonly = true;
-              
+
               var model = scope.model;
               var derivedFrom = form.derivedFrom;
 
