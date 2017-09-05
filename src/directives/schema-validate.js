@@ -187,8 +187,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // kelin: this is the messiest code I've ever met in schema form so far... ╮(╯▽╰)╭
             ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
             if (form.required) {
-              if (ngModel.$isEmpty(ngModel.$modelValue) ||
-                ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []))) {
+              if (_isEmptyNgModel()) {
                 ngModel.$setValidity('tv4-302', false);
                 // kelin: Once the validity become false, return immediately. This is what schema form originally does. No bother to change atm
                 return;
@@ -215,6 +214,11 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // In angular 1.2 setting a viewValue of undefined will trigger the parser.
             // hence required works.
             ngModel.$setViewValue(ngModel.$viewValue);
+          }
+
+          function _isEmptyNgModel () {
+            return ngModel.$isEmpty(ngModel.$modelValue) ||
+              ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []));
           }
         }
       }

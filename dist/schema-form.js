@@ -3100,8 +3100,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // kelin: this is the messiest code I've ever met in schema form so far... ╮(╯▽╰)╭
             ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
             if (form.required) {
-              if (ngModel.$isEmpty(ngModel.$modelValue) ||
-                ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []))) {
+              if (_isEmptyNgModel()) {
                 ngModel.$setValidity('tv4-302', false);
                 // kelin: Once the validity become false, return immediately. This is what schema form originally does. No bother to change atm
                 return;
@@ -3128,6 +3127,11 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // In angular 1.2 setting a viewValue of undefined will trigger the parser.
             // hence required works.
             ngModel.$setViewValue(ngModel.$viewValue);
+          }
+
+          function _isEmptyNgModel () {
+            return ngModel.$isEmpty(ngModel.$modelValue) ||
+              ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []));
           }
         }
       }
@@ -3293,12 +3297,19 @@ angular.module('schemaForm').directive('sfField',
               if (scope.options && scope.options.pristine &&
                                 scope.options.pristine.success === false) {
                 return scope.ngModel.$valid &&
-                                    !scope.ngModel.$pristine && !scope.ngModel.$isEmpty(scope.ngModel.$modelValue);
+                                    !scope.ngModel.$pristine && !_isEmptyNgModel();
               } else {
                 return scope.ngModel.$valid &&
-                                    (!scope.ngModel.$pristine || !scope.ngModel.$isEmpty(scope.ngModel.$modelValue));
+                                    (!scope.ngModel.$pristine || !_isEmptyNgModel());
               }
             };
+
+            function _isEmptyNgModel () {
+              var ngModel = scope.ngModel;
+              var schema = scope.form.schema;
+              return ngModel.$isEmpty(ngModel.$modelValue) ||
+                ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []));
+            }
 
             scope.hasError = function () {
               // console.log('sf-field - hasError() called');
@@ -3433,9 +3444,9 @@ angular.module('schemaForm').directive('sfField',
             }
 
             if (form.derivedFrom) {
-              //if value is derived, then it should not be editable, so set readonly. This is only display logic, so do not update schema
+              // if value is derived, then it should not be editable, so set readonly. This is only display logic, so do not update schema
               form.readonly = true;
-              
+
               var model = scope.model;
               var derivedFrom = form.derivedFrom;
 
