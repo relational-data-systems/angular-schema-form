@@ -184,19 +184,16 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
             // In Angular 1.3 setting undefined as a viewValue does not trigger parsers
             // so we need to do a special required check. Fortunately we have $isEmpty
             // FIXME: i think this should handle more than one case at a time if we want multiple messages displayed per field?
-            // kelin: this is the messiest code I've met in schema form so far... ╮(╯▽╰)╭
+            // kelin: this is the messiest code I've ever met in schema form so far... ╮(╯▽╰)╭
             ngModel.$setValidity('tv4-302', true); // hotfix for not reset required validation
             if (form.required) {
-              if (ngModel.$isEmpty(ngModel.$modelValue)) {
+              if (ngModel.$isEmpty(ngModel.$modelValue) ||
+                ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, []))) {
                 ngModel.$setValidity('tv4-302', false);
                 // kelin: Once the validity become false, return immediately. This is what schema form originally does. No bother to change atm
                 return;
-              }
-
-              if ((schema && schema.type.indexOf('array') !== -1) && angular.equals(ngModel.$modelValue, [])) {
-                ngModel.$setValidity('tv4-302', false);
-                // kelin: Once the validity become false, return immediately. This is what schema form originally does. No bother to change atm
-                return;
+              } else {
+                ngModel.$setValidity('tv4-302', true);
               }
             }
 
