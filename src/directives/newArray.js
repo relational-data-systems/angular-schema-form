@@ -1,8 +1,8 @@
 /**
  * Directive that handles the model arrays
  */
-angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPath', 'schemaForm',
-  function ($sce, sel, sfPath, schemaForm) {
+angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPath', 'schemaForm', '$timeout',
+  function ($sce, sel, sfPath, schemaForm, $timeout) {
     return {
       scope: false,
       link: function (scope, element, attrs) {
@@ -132,7 +132,9 @@ angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPat
                 // Time to validate the rebuilt array.
                 // validateField method is exported by schema-validate
                 if (scope.validateField) {
-                  scope.validateField();
+                  // kelin: postpone the validation after data are updated to model to avoid
+                  // giving incorrect validation result.
+                  $timeout(scope.validateField);
                 }
               }
             });
