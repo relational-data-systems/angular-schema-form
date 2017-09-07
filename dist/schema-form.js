@@ -1858,14 +1858,14 @@ angular.module('schemaForm').provider('schemaForm',
       _assertValidateSfScope(scope);
       var arrayIndices = _getArrayIndicesByScopeHierarchy(scope);
       if (angular.isString(strOrArray)) {
-        var str = strOrArray;
-        var regex = /(\[\])+/g;
+        var str = strOrArray.replace(/\[arrayIndex]/g, '[]');
+        var regex = /(\[])+/g;
         var matched;
         while ((matched = regex.exec(str)) !== null) {
           var replaceCount = matched[0].length / 2;
           for (var i = 0; i < replaceCount; i++) {
             if (i < arrayIndices.length) {
-              str = str.replace(/\[\]/, '[' + arrayIndices[i] + ']');
+              str = str.replace(/\[]/, '[' + arrayIndices[i] + ']');
             } else {
               $log.error('sfModelValue#interpArrayIndex - Cannot find any more array index for the current match', arrayIndices, matched);
             }
