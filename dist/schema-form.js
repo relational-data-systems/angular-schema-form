@@ -2339,13 +2339,17 @@ angular.module('schemaForm').directive('jsExpression', [function () {
       $scope.$watch($attr.jsExpression, function (value) {
         var validity = !!value; // Just need true or false
         $scope.form.jsExpressionResult = validity;
-        if (isFormDirty()) {
+        if (_isFormDirty() && _isNgModelDirty()) {
           $scope.$broadcast('schemaForm.error.' + $scope.getModelPath().join('.'), 'jsExpression', null, validity);
         }
       });
 
-      function isFormDirty () {
-                    // FIXME, check till root form
+      function _isNgModelDirty () {
+        return $scope.ngModel && $scope.ngModel.$dirty;
+      }
+
+      function _isFormDirty () {
+        // FIXME, check till root form
         var result = $scope.ngModel.$$parentForm.$dirty;
         if (!result && $scope.ngModel.$$parentForm.$$parentForm) {
           result = $scope.ngModel.$$parentForm.$$parentForm.$dirty;
