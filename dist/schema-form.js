@@ -318,12 +318,12 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function (
     },
     jsExpression: function (args) {
       if (args.form.schema && args.form.schema.jsExpression) {
-        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index})';
+        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index, "utils": utils })';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
           // kelin: try to make the "evalExpr" work in array. (Only for one level of array). Array inside another array is still not supported.
           strKey = strKey.replace(/\[''\]/g, '[$index]');
-          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
+          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "utils": utils, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
@@ -3147,9 +3147,9 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
  */
 angular.module('schemaForm').directive('sfField',
   ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-    'sfPath', 'sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService', '$sce',
+    'sfPath', 'sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService', '$sce', '__sfbEnv',
     function ($parse, $compile, $http, $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService, $sce) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService, $sce, __sfbEnv) {
       return {
         restrict: 'AE',
         replace: false,
@@ -3281,6 +3281,8 @@ angular.module('schemaForm').directive('sfField',
               }
               return '';
             };
+
+            scope.utils = __sfbEnv.utils;
 
             // Angular tempaltes that have access to sf-field scope can use these pre-defined loading spinner
             // templates to cover a exact component in these templates:

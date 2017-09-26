@@ -3,9 +3,9 @@
  */
 angular.module('schemaForm').directive('sfField',
   ['$parse', '$compile', '$http', '$templateCache', '$interpolate', '$q', 'sfErrorMessage',
-    'sfPath', 'sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService', '$sce',
+    'sfPath', 'sfSelect', 'sfModelValue', '$log', '$timeout', 'LoadingSpinnerService', '$sce', '__sfbEnv',
     function ($parse, $compile, $http, $templateCache, $interpolate, $q, sfErrorMessage,
-                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService, $sce) {
+                 sfPath, sfSelect, sfModelValue, $log, $timeout, LoadingSpinnerService, $sce, __sfbEnv) {
       return {
         restrict: 'AE',
         replace: false,
@@ -137,6 +137,8 @@ angular.module('schemaForm').directive('sfField',
               }
               return '';
             };
+
+            scope.utils = __sfbEnv.utils;
 
             // Angular tempaltes that have access to sf-field scope can use these pre-defined loading spinner
             // templates to cover a exact component in these templates:
