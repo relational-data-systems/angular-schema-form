@@ -77,5 +77,10 @@
       "schema-form.min.js",
       "schema-form.js"
     ]
+  },
+  "semistandard": {
+    "globals": [
+      "angular"
+    ]
   }
 }
