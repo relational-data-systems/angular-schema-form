@@ -2724,8 +2724,8 @@ FIXME: real documentation
 
 angular.module('schemaForm')
        .directive('sfSchema',
-  ['$compile', '$http', '$templateCache', '$q', 'schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder',
-    function ($compile, $http, $templateCache, $q, schemaForm, schemaFormDecorators, sfSelect, sfPath, sfBuilder) {
+  ['$compile', '$http', '$templateCache', '$q', 'schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder', '__sfbEnv',
+    function ($compile, $http, $templateCache, $q, schemaForm, schemaFormDecorators, sfSelect, sfPath, sfBuilder, __sfbEnv) {
       return {
         scope: {
           schema: '=sfSchema',
@@ -2814,6 +2814,13 @@ angular.module('schemaForm')
 
           // make the form available to decorators
             childScope.schemaForm = {form: merged, schema: schema};
+
+          // kelin: Put "utils" here in case it's missing for container conditions
+            var utils = __sfbEnv && __sfbEnv.utils;
+            if (!utils) {
+              $log.error('schemaForm#internalRender - \'utils\' property is missing from __sfbEnv. AngularJS expressions using \'utils\' will all fail. __sfbEnv is:', __sfbEnv);
+            }
+            childScope.utils = utils;
 
           // clean all but pre existing html.
             element.children(':not(.schema-form-ignore)').remove();
