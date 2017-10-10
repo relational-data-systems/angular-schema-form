@@ -47,7 +47,7 @@
       }
 
       if (projection === null) {
-        return null;
+        return;
       }
       return sfSelect(projection, obj, valueToSet);
     }
