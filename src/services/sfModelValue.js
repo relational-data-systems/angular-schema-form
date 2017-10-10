@@ -46,6 +46,9 @@
         throw Error('sfModelValue - incorrect param combination');
       }
 
+      if (projection === null) {
+        return null;
+      }
       return sfSelect(projection, obj, valueToSet);
     }
 
