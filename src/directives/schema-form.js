@@ -5,8 +5,13 @@ FIXME: real documentation
 
 angular.module('schemaForm')
        .directive('sfSchema',
-  ['$compile', '$http', '$templateCache', '$q', 'schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder', '__sfbEnv',
-    function ($compile, $http, $templateCache, $q, schemaForm, schemaFormDecorators, sfSelect, sfPath, sfBuilder, __sfbEnv) {
+  ['$compile', '$http', '$templateCache', '$q', 'schemaForm', 'schemaFormDecorators', 'sfSelect', 'sfPath', 'sfBuilder', '__sfbEnv', '$log',
+    function ($compile, $http, $templateCache, $q, schemaForm, schemaFormDecorators, sfSelect, sfPath, sfBuilder, __sfbEnv, $log) {
+      var _utils = __sfbEnv && __sfbEnv.utils;
+      if (!_utils) {
+        $log.error('schemaForm#internalRender - \'utils\' property is missing from __sfbEnv. AngularJS expressions using \'utils\' will all fail. __sfbEnv is:', __sfbEnv);
+      }
+
       return {
         scope: {
           schema: '=sfSchema',
@@ -16,6 +21,7 @@ angular.module('schemaForm')
         },
         controller: ['$scope', function ($scope) {
           this.evalInParentScope = function (expr, locals) {
+            locals = _.merge(locals, {utils: _utils});
             return $scope.$parent.$eval(expr, locals);
           };
 
@@ -97,11 +103,7 @@ angular.module('schemaForm')
             childScope.schemaForm = {form: merged, schema: schema};
 
           // kelin: Put "utils" here in case it's missing for container conditions
-            var utils = __sfbEnv && __sfbEnv.utils;
-            if (!utils) {
-              $log.error('schemaForm#internalRender - \'utils\' property is missing from __sfbEnv. AngularJS expressions using \'utils\' will all fail. __sfbEnv is:', __sfbEnv);
-            }
-            childScope.utils = utils;
+            childScope.utils = _utils;
 
           // clean all but pre existing html.
             element.children(':not(.schema-form-ignore)').remove();
@@ -196,6 +198,7 @@ angular.module('schemaForm')
          * @return {Any} the result of the expression
          */
           scope.evalExpr = function (expression, locals) {
+            locals = _.merge(locals, {utils: _utils});
             return scope.$parent.$eval(expression, locals);
           };
         }

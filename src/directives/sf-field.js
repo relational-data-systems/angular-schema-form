@@ -54,10 +54,10 @@ angular.module('schemaForm').directive('sfField',
                 form.onClick($event, form);
               } else if (angular.isString(form.onClick)) {
                 if (sfSchema) {
-                        // evaluating in scope outside of sfSchemas isolated scope
-                  sfSchema.evalInParentScope(form.onClick, {'$event': $event, form: form});
+                  // evaluating in scope outside of sfSchemas isolated scope
+                  sfSchema.evalInParentScope(form.onClick, {'$event': $event, form: form, model: scope.model});
                 } else {
-                  scope.$eval(form.onClick, {'$event': $event, form: form});
+                  scope.$eval(form.onClick, {'$event': $event, form: form, model: scope.model});
                 }
               }
             };
