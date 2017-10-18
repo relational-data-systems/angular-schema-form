@@ -257,10 +257,10 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function (
       // but be nice to existing ng-if.
       if (args.form.condition) {
         var evalExpr = 'evalExpr(' + args.path +
-                       '.condition, { model: model, "arrayIndex": $index, "utils": utils})';
+                       '.condition, { model: model, "arrayIndex": $index})';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
-          evalExpr = 'evalExpr(' + args.path + '.condition,{ model: model, "arrayIndex": $index, "utils": utils, ' +
+          evalExpr = 'evalExpr(' + args.path + '.condition,{ model: model, "arrayIndex": $index,' +
                      '"modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
@@ -318,12 +318,12 @@ angular.module('schemaForm').provider('sfBuilder', ['sfPathProvider', function (
     },
     jsExpression: function (args) {
       if (args.form.schema && args.form.schema.jsExpression) {
-        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index, "utils": utils })';
+        var evalExpr = 'evalExpr(' + args.path + '.jsExpression, { "model": model, "arrayIndex": $index })';
         if (args.form.key) {
           var strKey = sfPathProvider.stringify(args.form.key);
           // kelin: try to make the "evalExpr" work in array. (Only for one level of array). Array inside another array is still not supported.
           strKey = strKey.replace(/\[''\]/g, '[$index]');
-          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "utils": utils, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
+          evalExpr = 'evalExpr(' + args.path + '.schema.jsExpression, { "model": model, "arrayIndex": $index, "modelValue": model' + (strKey[0] === '[' ? '' : '.') + strKey + '})';
         }
 
         var children = args.fieldFrag.children || args.fieldFrag.childNodes;
