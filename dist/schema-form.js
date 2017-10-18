@@ -2743,7 +2743,7 @@ angular.module('schemaForm')
         },
         controller: ['$scope', function ($scope) {
           this.evalInParentScope = function (expr, locals) {
-            locals = _.merge(locals, {utils: _utils});
+            locals = _.merge(locals, {utils: _utils, env: __sfbEnv});
             return $scope.$parent.$eval(expr, locals);
           };
 
@@ -2826,6 +2826,7 @@ angular.module('schemaForm')
 
           // kelin: Put "utils" here in case it's missing for container conditions
             childScope.utils = _utils;
+            childScope.env = __sfbEnv;
 
           // clean all but pre existing html.
             element.children(':not(.schema-form-ignore)').remove();
@@ -2920,7 +2921,7 @@ angular.module('schemaForm')
          * @return {Any} the result of the expression
          */
           scope.evalExpr = function (expression, locals) {
-            locals = _.merge(locals, {utils: _utils});
+            locals = _.merge(locals, {utils: _utils, env: __sfbEnv});
             return scope.$parent.$eval(expression, locals);
           };
         }
@@ -3300,6 +3301,7 @@ angular.module('schemaForm').directive('sfField',
               $log.error('sfField#postLink - \'utils\' property is missing from __sfbEnv. AngularJS expressions using \'utils\' will all fail. __sfbEnv is:', __sfbEnv);
             }
             scope.utils = utils;
+            scope.env = __sfbEnv;
 
             // Angular tempaltes that have access to sf-field scope can use these pre-defined loading spinner
             // templates to cover a exact component in these templates:
