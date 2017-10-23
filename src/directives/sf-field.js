@@ -143,6 +143,7 @@ angular.module('schemaForm').directive('sfField',
               $log.error('sfField#postLink - \'utils\' property is missing from __sfbEnv. AngularJS expressions using \'utils\' will all fail. __sfbEnv is:', __sfbEnv);
             }
             scope.utils = utils;
+            scope.env = __sfbEnv;
 
             // Angular tempaltes that have access to sf-field scope can use these pre-defined loading spinner
             // templates to cover a exact component in these templates:
