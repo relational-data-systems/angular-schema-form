@@ -83,8 +83,8 @@
 
     function _findParentArrayComponentKey (scope) {
       var result = null;
-      var currentScope;
-      while ((currentScope = scope.$parent) != null) {
+      var currentScope = scope;
+      while ((currentScope = currentScope.$parent) != null) {
         var form = currentScope.form;
         if (form && form.schema && form.schema.type === 'array') {
           result = form.key;
