@@ -137,6 +137,9 @@ angular.module('schemaForm')
             $compile(element.children())(childScope);
 
           // ok, now that that is done let's set any defaults
+          // Simon: set defaults here would cause issue if some section is hidden and the default value should not be set
+          // So move the set default logic to sfField to set it just before rendering a field
+          /*
             if (!scope.options || scope.options.setSchemaDefaults !== false) {
               schemaForm.traverseSchema(schema, function (prop, path) {
                 if (angular.isDefined(prop['default'])) {
@@ -147,6 +150,7 @@ angular.module('schemaForm')
                 }
               });
             }
+            */
 
             scope.$emit('sf-render-finished', element);
           };
