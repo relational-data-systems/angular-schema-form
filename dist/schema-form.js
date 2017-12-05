@@ -3188,7 +3188,7 @@ angular.module('schemaForm').directive('sfField',
             scope.form = sfSchema.lookup['f' + attrs.sfField] ? sfSchema.lookup['f' + attrs.sfField] : scope.form;
             
             var val = sfModelValue(scope);
-            if(scope.form.schema && scope.form.schema.default && angular.isUndefined(val)) {                
+            if((!scope.options || scope.options.setSchemaDefaults !== false) && scope.form.schema && scope.form.schema.default && angular.isUndefined(val)) {                
                 sfModelValue(scope, scope.form.schema.default);
             }
           },
