@@ -1800,7 +1800,7 @@ angular.module('schemaForm').factory('sfSelect', ['sfPath', function (sfPath) {
     }
 
     function getModelPath (scope) {
-      var modelPath;
+      var modelPath = null;
 
       if (!scope.form) {
         return null;
@@ -1812,33 +1812,21 @@ angular.module('schemaForm').factory('sfSelect', ['sfPath', function (sfPath) {
         _updateModelPathWithArrayIndices(modelPath, arrayIndices);
         return modelPath;
       } else {
-        if (arrayIndices.length > 0) { // This means that we are inside an array
-          var parentArrayComponentKey = _findParentArrayComponentKey(scope);
-          if (!parentArrayComponentKey) {
-            $log.error('sfModelValue#getModelPath - failed to find an array that contains this component: ', form);
-            return null;
+        var currentScope = scope;
+        while ((currentScope = currentScope.$parent) != null) {
+          var form = currentScope.form;
+          if (form && form.key ) {
+            modelPath = angular.copy(form.key);
+            if(form.schema && form.schema.type === 'array') { // This means that we are inside an array
+               modelPath.push('');
+            }
+            break;
           }
-          modelPath = angular.copy(parentArrayComponentKey);
-          modelPath.push('');
-          _updateModelPathWithArrayIndices(modelPath, arrayIndices);
-          return modelPath;
-        } else {
-          return null;
         }
-      }
-    }
-
-    function _findParentArrayComponentKey (scope) {
-      var result = null;
-      var currentScope = scope;
-      while ((currentScope = currentScope.$parent) != null) {
-        var form = currentScope.form;
-        if (form && form.schema && form.schema.type === 'array') {
-          result = form.key;
-          break;
-        }
-      }
-      return result;
+          if(modelPath && arrayIndices.length>0)
+            _updateModelPathWithArrayIndices(modelPath, arrayIndices);
+          return modelPath;        
+      }       
     }
 
     function _updateModelPathWithArrayIndices (modelPath, arrayIndices) {
