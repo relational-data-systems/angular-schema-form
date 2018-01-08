@@ -1,8 +1,8 @@
 /**
  * Directive that handles the model arrays
  */
-angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPath', 'schemaForm', '$timeout',
-  function ($sce, sel, sfPath, schemaForm, $timeout) {
+angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPath', 'schemaForm', '$timeout', '$log',
+  function ($sce, sel, sfPath, schemaForm, $timeout, $log) {
     return {
       scope: false,
       link: function (scope, element, attrs) {
@@ -144,47 +144,52 @@ angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPat
         });
 
         scope.appendToArray = function () {
-          var empty;
+          var shouldShowAsUsedWithSubmodelAPI = scope.evalInScope("model._uiCtrlExtra.shouldEnableSubModelApiButtons");
+          if(shouldShowAsUsedWithSubmodelAPI && scope.form.readonly && scope.form.formIdForSubModelApi) {
+            openFormForSubModelAPI();
+          } else {
+            var empty;
 
-          // Create and set an array if needed.
-          var model = getOrCreateModel();
+            // Create and set an array if needed.
+            var model = getOrCreateModel();
 
-          // Same old add empty things to the array hack :(
-          if (scope.form && scope.form.schema && scope.form.schema.items) {
-            var items = scope.form.schema.items;
-            if (items.type && items.type.indexOf('object') !== -1) {
-              empty = {};
+            // Same old add empty things to the array hack :(
+            if (scope.form && scope.form.schema && scope.form.schema.items) {
+              var items = scope.form.schema.items;
+              if (items.type && items.type.indexOf('object') !== -1) {
+                empty = {};
 
-              // Check for possible defaults
-              if (!scope.options || scope.options.setSchemaDefaults !== false) {
-                empty = angular.isDefined(items['default']) ? items['default'] : empty;
+                // Check for possible defaults
+                if (!scope.options || scope.options.setSchemaDefaults !== false) {
+                  empty = angular.isDefined(items['default']) ? items['default'] : empty;
 
-                // Check for defaults further down in the schema.
-                // If the default instance sets the new array item to something falsy, i.e. null
-                // then there is no need to go further down.
-                if (empty) {
-                  schemaForm.traverseSchema(items, function (prop, path) {
-                    if (angular.isDefined(prop['default'])) {
-                      sel(path, empty, prop['default']);
-                    }
-                  });
+                  // Check for defaults further down in the schema.
+                  // If the default instance sets the new array item to something falsy, i.e. null
+                  // then there is no need to go further down.
+                  if (empty) {
+                    schemaForm.traverseSchema(items, function (prop, path) {
+                      if (angular.isDefined(prop['default'])) {
+                        sel(path, empty, prop['default']);
+                      }
+                    });
+                  }
+                }
+              } else if (items.type && items.type.indexOf('array') !== -1) {
+                empty = [];
+                if (!scope.options || scope.options.setSchemaDefaults !== false) {
+                  empty = items['default'] || empty;
+                }
+              } else {
+                // No type? could still have defaults.
+                if (!scope.options || scope.options.setSchemaDefaults !== false) {
+                  empty = items['default'] || empty;
                 }
               }
-            } else if (items.type && items.type.indexOf('array') !== -1) {
-              empty = [];
-              if (!scope.options || scope.options.setSchemaDefaults !== false) {
-                empty = items['default'] || empty;
-              }
-            } else {
-              // No type? could still have defaults.
-              if (!scope.options || scope.options.setSchemaDefaults !== false) {
-                empty = items['default'] || empty;
-              }
             }
-          }
-          model.push(empty);
+            model.push(empty);
 
-          return model;
+            return model;
+          }
         };
 
         scope.deleteFromArray = function (index) {
@@ -259,6 +264,63 @@ angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPat
           }
           return formDefCache[index];
         };
+        
+        //To reuse the "add" button of array component with submodel api, we have to put our contrl logic into this angular schmea form array code, not a good thing to do, but have to?
+        scope.shouldShowAsUsedWithSubmodelAPI = function() {          
+          return scope.evalInScope("model._uiCtrlExtra.shouldEnableSubModelApiButtons") && !scope.form.disableAdd && scope.form.formIdForSubModelApi;
+        };
+        
+        function openFormForSubModelAPI() {
+          var pathArray = scope.getModelPath();
+          var path = '';
+          if(pathArray) {
+           pathArray.forEach( function(subpath) {
+             if(Number.isInteger(subpath)) {
+               path += '.[' + subpath + ']';
+             } else {
+               path += '.' + subpath;
+             }
+           });
+          }
+          if(path) {
+            path = path.substr(1);
+          }
+          
+          var model = getOrCreateModel();
+          path += ".[" + model.length + "]";
+          
+          var pId = scope.evalInScope("model._processInstanceId");
+          var taskId = scope.evalInScope("model._taskId");
+          var formkey = scope.form.formIdForSubModelApi;
+          var url = __sfbEnv.baseUrl + 'data/';
+          if(pId) {
+            url += 'pid/' + pId + '?path=' + encodeURIComponent(path) + '&form=' + encodeURIComponent(formkey) ; 
+          } else {
+            url += 'tid/' + taskId + '?path=' + encodeURIComponent(path) + '&form=' + encodeURIComponent(formkey) ; 
+          }
+          
+          getRootController(scope).openFormInDialog(formkey, url);
+        }
+        
+        function getRootController (scope) {
+          var controller = scope.evalExpr('$$ctrl$$');
+          if (!controller) {
+            return null;
+          }
+
+          if (!controller.openFormInDialog || !angular.isFunction(controller.openFormInDialog)) {
+            controller.openFormInDialog = _simpleMockFunction();
+          }
+          return controller;
+        }
+
+        function _simpleMockFunction () {
+          return function () {
+            $log.debug('Mock function ' + arguments.callee + ' is called, arguments: ', arguments);
+          };
+        }
+        
       }
+      
     };
   }]);
