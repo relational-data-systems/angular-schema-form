@@ -985,7 +985,7 @@ angular.module('schemaForm').provider('sfErrorMessage', function () {
   //Simon Yang: needs these for date picker
   defaultMessages.dateFormat  = "Wrong date format";
   defaultMessages.dateMin = "value < {{form.minDate}}";
-  defaultMessages.dateMax = "value > {{form.minDate}}";
+  defaultMessages.dateMax = "value > {{form.maxDate}}";
 
   var errorCode2FieldMap = {
     '101': 'minimum',
