@@ -57,7 +57,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function () {
             // console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function (e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation'; });
+            return !Object.keys(ngModel.$error).some(function (e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation'&& e !== 'dateFormat' && e !== 'dateMin' && e !== 'dateMax';  });
           };
         }
 

@@ -56,6 +56,11 @@ angular.module('schemaForm').provider('sfErrorMessage', function () {
   defaultMessages.minLength = defaultMessages.minlength;
   defaultMessages.maxLength = defaultMessages.maxlength;
   defaultMessages.type = 'Incorrect data type, {{schema.type}} expected';
+  
+  //Simon Yang: needs these for date picker
+  defaultMessages.dateFormat  = "Wrong date format";
+  defaultMessages.dateMin = "value < {{form.minDate}}";
+  defaultMessages.dateMax = "value > {{form.minDate}}";
 
   var errorCode2FieldMap = {
     '101': 'minimum',
