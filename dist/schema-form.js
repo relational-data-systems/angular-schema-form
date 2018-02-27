@@ -981,6 +981,11 @@ angular.module('schemaForm').provider('sfErrorMessage', function () {
   defaultMessages.minLength = defaultMessages.minlength;
   defaultMessages.maxLength = defaultMessages.maxlength;
   defaultMessages.type = 'Incorrect data type, {{schema.type}} expected';
+  
+  //Simon Yang: needs these for date picker
+  defaultMessages.dateFormat  = "Wrong date format";
+  defaultMessages.dateMin = "value < {{form.minDate}}";
+  defaultMessages.dateMax = "value > {{form.minDate}}";
 
   var errorCode2FieldMap = {
     '101': 'minimum',
@@ -3042,7 +3047,7 @@ angular.module('schemaForm').directive('schemaValidate', ['sfValidator', '$parse
           ngModel.$validators.schemaForm = function () {
             // console.log('validators called.')
             // Any error and we're out of here!
-            return !Object.keys(ngModel.$error).some(function (e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation'; });
+            return !Object.keys(ngModel.$error).some(function (e) { return e !== 'schemaForm' && e !== 'jsExpression' && e !== 'remoteValidation'&& e !== 'dateFormat' && e !== 'dateMin' && e !== 'dateMax';  });
           };
         }
 
