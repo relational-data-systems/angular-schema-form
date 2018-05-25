@@ -725,7 +725,7 @@ angular.module('schemaForm').provider('schemaFormDecorators',
 
     var createManualDirective = function (type, templateUrl, transclude) {
       transclude = angular.isDefined(transclude) ? transclude : false;
-      $compileProvider.directive('sf' + angular.uppercase(type[0]) + type.substr(1), function () {
+      $compileProvider.directive('sf' + String.prototype.toUpperCase(type[0]) + type.substr(1), function () {
         return {
           restrict: 'EAC',
           scope: true,
