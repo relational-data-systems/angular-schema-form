@@ -3535,13 +3535,12 @@ angular.module('schemaForm').directive('sfField',
             if (form.derivedFrom) {
               // if value is derived, then it should not be editable, so set readonly. This is only display logic, so do not update schema
               form.readonly = true;
-
-              var model = scope.model;
+              
               var derivedFrom = form.derivedFrom;
 
               $log.debug('sfField#derivedFromPropertyHandler - ' + angular.toJson(form.key) + ' has derived-value expression: ' + derivedFrom);
 
-              if (!model) {
+              if (!scope.model) {
                 $log.warn('sfField#derivedFromPropertyHandler - ' + angular.toJson(form.key) + ' is not associated with the form model, so won\'t do anything here');
               }
 
@@ -3565,7 +3564,7 @@ angular.module('schemaForm').directive('sfField',
 
                 scope.$watch(function () {
                   // The field itself should be excluded from the watched model object, to avoid the unnecessary second-time update
-                  var modelToWatch = angular.copy(model);
+                  var modelToWatch = angular.copy(scope.model);
                   _.set(modelToWatch, modelPath, null);
                   return modelToWatch;
                 }, function (modelNewVal, oldVal) {
