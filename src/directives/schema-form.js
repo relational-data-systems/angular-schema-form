@@ -165,8 +165,7 @@ angular.module('schemaForm')
 
           // The check for schema.type is to ensure that schema is not {}
             if (form && schema && schema.type &&
-              (lastDigest.form !== form || lastDigest.schema !== schema) &&
-              Object.keys(schema.properties).length > 0) {
+              (lastDigest.form !== form || lastDigest.schema !== schema)) {
               lastDigest.schema = schema;
               lastDigest.form = form;
 
