@@ -293,10 +293,10 @@ angular.module('schemaForm').directive('sfNewArray', ['$sce', 'sfSelect', 'sfPat
           var taskId = scope.evalInScope("model._taskId");
           var formkey = scope.form.formIdForSubModelApi;
           var url = __sfbEnv.baseUrl + 'data/';
-          if(pId) {
-            url += 'pid/' + pId + '?path=' + encodeURIComponent(path) + '&form=' + encodeURIComponent(formkey) ; 
-          } else {
+          if(taskId) {
             url += 'tid/' + taskId + '?path=' + encodeURIComponent(path) + '&form=' + encodeURIComponent(formkey) ; 
+          } else {
+            url += 'pid/' + pId + '?path=' + encodeURIComponent(path) + '&form=' + encodeURIComponent(formkey) ; 
           }
           
           getRootController(scope).openFormInDialog(formkey, url);
